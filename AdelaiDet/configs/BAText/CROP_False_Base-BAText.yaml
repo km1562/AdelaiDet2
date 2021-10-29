@@ -29,6 +29,6 @@ INPUT:
   MIN_SIZE_TEST: 1000
   MAX_SIZE_TEST: 1824
   CROP:
-    ENABLED: True
+    ENABLED: False
     CROP_INSTANCE: False
     SIZE: [0.1, 0.1]
