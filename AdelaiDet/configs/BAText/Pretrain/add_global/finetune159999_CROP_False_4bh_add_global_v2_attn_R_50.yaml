@@ -22,9 +22,9 @@ MODEL:
     IOU_THRESHOLDS: [ 0.5 ]
 SOLVER:
   IMS_PER_BATCH: 4
-  BASE_LR: 0.01
-  STEPS: (160000, 280000)
-  MAX_ITER: 360000
+  BASE_LR: 0.00001
+  STEPS: (40000,)
+  MAX_ITER: 60000
   CHECKPOINT_PERIOD: 10000
 TEST:
   EVAL_PERIOD: 20000
@@ -33,5 +33,5 @@ INPUT:
     ENABLED: False
     CROP_INSTANCE: False
     SIZE: [ 0.1, 0.1 ]
-OUTPUT_DIR: "output/batext/16w_pretrain/global_context_v2_attn_R_50"
+OUTPUT_DIR: "output/batext/finetune_16W/global_context_v2_attn_R_50"
 
