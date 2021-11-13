@@ -21,8 +21,10 @@ _C.MODEL.FCOS.NUM_CLASSES = 80
 _C.MODEL.FCOS.IN_FEATURES = ["p3", "p4", "p5", "p6", "p7"]
 _C.MODEL.FCOS.FPN_STRIDES = [8, 16, 32, 64, 128]
 _C.MODEL.FCOS.PRIOR_PROB = 0.01
-_C.MODEL.FCOS.INFERENCE_TH_TRAIN = 0.05
-_C.MODEL.FCOS.INFERENCE_TH_TEST = 0.05
+# _C.MODEL.FCOS.INFERENCE_TH_TRAIN = 0.05
+# _C.MODEL.FCOS.INFERENCE_TH_TEST = 0.05
+_C.MODEL.FCOS.INFERENCE_TH_TRAIN = [0.05]
+_C.MODEL.FCOS.INFERENCE_TH_TEST = [0.05]
 _C.MODEL.FCOS.NMS_TH = 0.6
 _C.MODEL.FCOS.PRE_NMS_TOPK_TRAIN = 1000
 _C.MODEL.FCOS.PRE_NMS_TOPK_TEST = 1000
@@ -185,7 +187,7 @@ _C.MODEL.MEInst.LOC_LOSS_TYPE = 'giou'
 # ---------------------------------------------------------------------------- #
 # Whether to use mask branch.
 _C.MODEL.MEInst.MASK_ON = True
-# IOU overlap ratios [IOU_THRESHOLD]
+# IOU overlap ratios [IOU_THRESHOLD]INFERENCE_TH_TRAIN
 # Overlap threshold for an RoI to be considered background (if < IOU_THRESHOLD)
 # Overlap threshold for an RoI to be considered foreground (if >= IOU_THRESHOLD)
 _C.MODEL.MEInst.IOU_THRESHOLDS = [0.5]
@@ -387,22 +389,10 @@ _C.MODEL.TEXTFUSENET_SEG_HEAD.FPN_FEATURES_FUSED_LEVEL = 0
 _C.MODEL.TEXTFUSENET_SEG_HEAD.POOLER_SCALES = (0.0625,)
 
 # --------------------------------------------------------------------------- #
-# Semantic Segmentation Head
-#TODO 调整
+# PREDICT_PROB
 # ---------------------------------------------------------------------------- #
-_C.MODEL.TEXTFUSENET_MUTIL_PATH_FUSE_ON = False
-_C.MODEL.SEM_SEG_HEAD = CN()
-_C.MODEL.SEM_SEG_HEAD.NAME = "SemSegFPNHead"
-_C.MODEL.SEM_SEG_HEAD.IN_FEATURES = ["p2", "p3", "p4", "p5"]
-# Label in the semantic segmentation ground truth that is ignored, i.e., no loss is calculated for
-# the correposnding pixel.
-_C.MODEL.SEM_SEG_HEAD.IGNORE_VALUE = 255
-# Number of classes in the semantic segmentation head
-_C.MODEL.SEM_SEG_HEAD.NUM_CLASSES = 54
-# Number of channels in the 3x3 convs inside semantic-FPN heads.
-_C.MODEL.SEM_SEG_HEAD.CONVS_DIM = 128
-# Outputs from semantic-FPN heads are up-scaled to the COMMON_STRIDE stride.
-_C.MODEL.SEM_SEG_HEAD.COMMON_STRIDE = 4
-# Normalization method for the convolution layers. Options: "" (no norm), "GN".
-_C.MODEL.SEM_SEG_HEAD.NORM = "GN"
-_C.MODEL.SEM_SEG_HEAD.LOSS_WEIGHT = 1.0
+_C.MODEL.PREDICT_PROB = CN()
+_C.MODEL.PREDICT_PROB.CHANNELS = 256
+_C.MODEL.PREDICT_PROB.NUM_FPN_FEATURES = 3
+_C.MODEL.PREDICT_PROB.NUM_CONV3 = 4
+_C.MODEL.PREDICT_PROB.FPN_FEATURES_FUSED_LEVEL = 2
