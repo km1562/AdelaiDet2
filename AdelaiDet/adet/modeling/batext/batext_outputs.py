@@ -411,6 +411,8 @@ class BATextOutputs(object):
             bundle["t"] = top_feats
 
         for i, instance in enumerate(zip(*bundle.values())):
+            
+            pre_nms = self.pre_nms_thresh[i]
             instance_dict = dict(zip(bundle.keys(), instance))
             # recall that during training, we normalize regression targets with FPN's stride.
             # we denormalize them here.
@@ -423,7 +425,7 @@ class BATextOutputs(object):
 
             sampled_boxes.append(
                 self.forward_for_single_feature_map(
-                    l, o, r, c, self.image_sizes, t
+                    pre_nms, l, o, r, c, self.image_sizes, t
                 )
             )
 
@@ -433,9 +435,9 @@ class BATextOutputs(object):
         return boxlists
 
     def forward_for_single_feature_map(
-            self, locations, box_cls,
+            self, pre_nms, locations, box_cls,
             reg_pred, ctrness,
-            image_sizes, top_feat=None):
+            image_sizes, top_feat=None, ):
         N, C, H, W = box_cls.shape
 
         # put in the same format as locations
@@ -453,7 +455,8 @@ class BATextOutputs(object):
         # scores with centerness scores before applying the threshold.
         if self.thresh_with_ctr:
             box_cls = box_cls * ctrness[:, :, None]
-        candidate_inds = box_cls > self.pre_nms_thresh
+        # candidate_inds = box_cls > self.pre_nms_thresh
+        candidate_inds = box_cls > pre_nms
         pre_nms_top_n = candidate_inds.view(N, -1).sum(1)
         pre_nms_top_n = pre_nms_top_n.clamp(max=self.pre_nms_top_n)
 
