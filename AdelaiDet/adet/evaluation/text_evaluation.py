@@ -64,8 +64,8 @@ class TextEvaluator(DatasetEvaluator):
             self._word_spotting = False
         else:
             self._text_eval_gt_path = ""
-        self._text_eval_confidence = cfg.MODEL.FCOS.INFERENCE_TH_TEST
-
+        # self._text_eval_confidence = cfg.MODEL.FCOS.INFERENCE_TH_TEST
+        self._text_eval_confidence = cfg.MODEL.FCOS.INFERENCE_TH_TEST_EVAL_FORMAT
     def reset(self):
         self._predictions = []
 
@@ -107,7 +107,7 @@ class TextEvaluator(DatasetEvaluator):
                             f2.writelines(outstr)
                 f2.close()
         dirn = temp_dir
-        lsc = [cf_th] 
+        lsc = [cf_th]
         fres = open('temp_all_det_cors.txt', 'r').readlines()
         for isc in lsc:	
             if not os.path.isdir(dirn):
@@ -219,6 +219,7 @@ class TextEvaluator(DatasetEvaluator):
         # eval text
         temp_dir = "temp_det_results/"
         self.to_eval_format(file_path, temp_dir, self._text_eval_confidence)
+        # self.to_eval_format(file_path, temp_dir, )
         result_path = self.sort_detection(temp_dir)
         text_result = self.evaluate_with_official_code(result_path, self._text_eval_gt_path)
         os.remove(result_path)
