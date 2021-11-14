@@ -436,8 +436,8 @@ class BATextOutputs(object):
         return boxlists
 
     def forward_for_single_feature_map(
-            self, pre_nms, locations, box_cls,
-            # self, locations, box_cls,
+            # self, pre_nms, locations, box_cls,
+            self, locations, box_cls,
             reg_pred, ctrness,
             image_sizes, top_feat=None, ):
         N, C, H, W = box_cls.shape
