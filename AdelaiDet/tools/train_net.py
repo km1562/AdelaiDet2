@@ -36,13 +36,14 @@ from detectron2.evaluation import (
 )
 from detectron2.modeling import GeneralizedRCNNWithTTA
 from detectron2.utils.logger import setup_logger
-from adet.modeling.roi_heads.seg_text_head import Seg_Text_Head
+# from adet.modeling.roi_heads.seg_text_head import Seg_Text_Head
 
 from adet.data.dataset_mapper import DatasetMapperWithBasis
 from adet.data.fcpose_dataset_mapper import FCPoseDatasetMapper
 from adet.config import get_cfg
 from adet.checkpoint import AdetCheckpointer
 from adet.evaluation import TextEvaluator
+import ipdb
 
 # import torch.distributed as dist
 # dist.init_process_group('gloo', init_method='file:///tmp/somefile', rank=0, world_size=1)
@@ -189,6 +190,7 @@ def setup(args):
     cfg = get_cfg()
     # cfg.set_new_allowed(is_new_allowed=True)
     cfg.merge_from_file(args.config_file)
+    ipdb.set_trace()
     cfg.merge_from_list(args.opts)
     cfg.freeze()
     default_setup(cfg, args)

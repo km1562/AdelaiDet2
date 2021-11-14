@@ -15,12 +15,20 @@ MODEL:
     RECOGNIZER: "attn"
     USE_COORDCONV: True
     USE_AET: True
+  PREDICT_PROB:
+    CHANNELS: 256
+    NUM_FPN_FEATURES: 5
+    NUM_CONV3: 4
+    FPN_FEATURES_FUSED_LEVEL: 2
 SOLVER:
   IMS_PER_BATCH: 2
   BASE_LR: 0.001  #0.01
   STEPS: (40000, )
   MAX_ITER: 80000  #260000
   CHECKPOINT_PERIOD: 20000
+DATASETS:
+  TRAIN: ("ctw1500_word_train",)
+  TEST: ("ctw1500_word_test",)
 TEST:
-  EVAL_PERIOD: 20000
-OUTPUT_DIR: "output/batext/pretrain/Resize_FPN_nearest/v2_attn_R_50"
+  EVAL_PERIOD: 10000
+OUTPUT_DIR: "output/batext/pretrain/pred_prob/v2_attn_R_50"

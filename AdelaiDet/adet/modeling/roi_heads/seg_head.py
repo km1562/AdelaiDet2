@@ -95,6 +95,7 @@ class Segmentation_head(nn.Module):
             global_context = self.conv3x3_list_roi[i](global_context)
         global_context = self.relu(global_context)
 
+        #TODO 这里不用融合了，只需要一系列卷积+pooler就可以了，
 
         # get segmentation logits
         # if len(feature_fuse) > 1:

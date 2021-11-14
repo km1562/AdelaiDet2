@@ -9,7 +9,7 @@ from detectron2.modeling.backbone.build import BACKBONE_REGISTRY
 from .resnet_lpf import build_resnet_lpf_backbone
 from .resnet_interval import build_resnet_interval_backbone
 from .mobilenet import build_mnv2_backbone
-
+from .resize_FPN import Resize_FPN
 
 class LastLevelP6P7(nn.Module):
     """

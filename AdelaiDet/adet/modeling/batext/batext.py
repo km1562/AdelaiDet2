@@ -9,7 +9,7 @@ from detectron2.modeling.proposal_generator.build import PROPOSAL_GENERATOR_REGI
 
 from adet.layers import DFConv2d, IOULoss
 from .batext_outputs import BATextOutputs
-
+from detectron2.layers import DeformConv
 
 __all__ = ["BAText"]
 
@@ -24,6 +24,50 @@ class Scale(nn.Module):
     def forward(self, input):
         return input * self.scale
 
+# class Predict_pre_nms_thresh(nn.Module):
+#     """
+#     就是利用batext做预测bezier的几个层，
+#     1、融合
+#     2、卷积+池化，加flatten，+sigmoid衰减一个维度出来
+#     3、预测一个阈值出来
+#
+#     """
+#     def __init__(self, cfg):
+#         super(Predict_pre_nms_thresh, self).__init__()
+#         self.channels = cfg.MODEL.PREDICT_PROB.CHANNELS
+#         self.num_fpn_features = cfg.MODEL.PREDICT_PROB.NUM_FPN_FEATURES
+#         self.num_conv3x3 = cfg.MODEL.PREDICT_PROB.NUM_CONV3
+#         self.feature_level = cfg.MODEL.PREDICT_PROB.FPN_FEATURES_FUSED_LEVEL
+#         self.conv1x1_list = nn.ModuleList()
+#         for i in range(self.num_fpn_features):
+#             self.conv1x1_list.append(nn.Conv2d(self.channels, self.channels, 1,padding=0, bias=False))
+#
+#         self.conv3x3_list = nn.ModuleList()
+#         for i in range(self.num_conv3x3):
+#             self.conv3x3_list.append(nn.Conv2d(self.channels, self.channels, 3, padding=1, bias=False))
+#         self.conv_pool = nn.Sequential(
+#             nn.MaxPool2d((2, 2), stride=2),
+#             nn.Conv2d(self.channels, 1, 3, padding=1, bias=False),
+#             nn.AdaptiveMaxPool2d((7, 7)),
+#             nn.Flatten(),
+#             nn.Linear(7 * 7, 1),
+#             nn.Sigmoid()
+#         )
+#
+#     def forward(self, features):
+#         feature_shape = features[self.feature_level].shape[-2:]
+#         feature_fuse = self.conv1x1_list[self.feature_level](features[self.feature_level])
+#
+#         for i, feature in enumerate(features):
+#             if i != self.feature_level:
+#                 feature = F.interpolate(feature, size=feature_shape, mode='bilinear', align_corners=True)
+#                 feature_fuse += self.conv1x1_list[i](feature)
+#
+#         for i in range(self.num_conv3x3):
+#             feature_fuse = self.conv3x3_list[i](feature_fuse)
+#         prob = self.conv_pool(feature_fuse)
+#         print("prob's value", prob)
+#         return prob
 
 @PROPOSAL_GENERATOR_REGISTRY.register()
 class BAText(nn.Module):
@@ -60,6 +104,7 @@ class BAText(nn.Module):
         soi.append([prev_size, INF])
         self.sizes_of_interest = soi
         self.fcos_head = FCOSHead(cfg, [input_shape[f] for f in self.in_features])
+        # self.predict_pre_nms_thresh = Predict_pre_nms_thresh(cfg)
 
     def forward_head(self, features, top_module=None):
         features = [features[f] for f in self.in_features]
@@ -81,16 +126,21 @@ class BAText(nn.Module):
 
         """
         features = [features[f] for f in self.in_features]
+
+        #TODO,这里就进行multi_fuse,+卷积softmax对他进行一个阈值的输出，并且融合的feature_fuse要传出去
+
         locations = self.compute_locations(features)
         logits_pred, reg_pred, ctrness_pred, top_feats, bbox_towers = self.fcos_head(
             features, top_module, self.yield_proposal)
 
         if self.training:
             pre_nms_thresh = self.pre_nms_thresh_train
+            # pre_nms_thresh = self.predict_pre_nms_thresh(features)
             pre_nms_topk = self.pre_nms_topk_train
             post_nms_topk = self.post_nms_topk_train
         else:
             pre_nms_thresh = self.pre_nms_thresh_test
+            # pre_nms_thresh = self.predict_pre_nms_thresh(features)
             pre_nms_topk = self.pre_nms_topk_test
             post_nms_topk = self.post_nms_topk_test
 

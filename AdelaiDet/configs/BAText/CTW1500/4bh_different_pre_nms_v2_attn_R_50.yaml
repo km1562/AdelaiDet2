@@ -7,8 +7,8 @@ MODEL:
     IN_FEATURES: ["res2", "res3", "res4", "res5"]
     OUT_CHANNELS: 256
     NUM_REPEATS: 2
-    NORM: "SyncBN"
-#    NORM: "GN"
+#    NORM: "SyncBN"
+    NORM: "GN"
   RESNETS:
     DEPTH: 50
   BATEXT:
@@ -17,14 +17,15 @@ MODEL:
     USE_AET: True
   FCOS:
     # Best e2e: 0.5; Best det: 0.3
-    INFERENCE_TH_TEST: [0.1, 0.2, 0.3, 0.4, 0.5]
-    INFERENCE_TH_TRAIN: [0.1, 0.2, 0.3, 0.4, 0.5]
+    INFERENCE_TH_TEST: [0.5, 0.5, 0.5, 0.5, 0.5]
+    INFERENCE_TH_TRAIN: [0.7, 0.7, 0.7, 0.7, 0.7]
+    INFERENCE_TH_TEST_EVAL_FORMAT: 0.5
 SOLVER:
-  IMS_PER_BATCH: 8
+  IMS_PER_BATCH: 2
   BASE_LR: 0.001
   STEPS: (80000, )
   MAX_ITER: 100000
   CHECKPOINT_PERIOD: 10000
 TEST:
   EVAL_PERIOD: 10000
-OUTPUT_DIR: "output/batext/ctw1500/v2_attn_R_50"
+OUTPUT_DIR: "output/batext/ctw1500/different_pre_nms_v2_attn_R_50"

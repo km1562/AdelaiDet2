@@ -11,13 +11,12 @@ from detectron2.modeling.backbone import Backbone
 from detectron2.modeling.backbone.build import BACKBONE_REGISTRY
 from detectron2.modeling.backbone.resnet import build_resnet_backbone
 
-__all__ = ["build_resnet_fpn_backbone", "build_retinanet_resnet_fpn_backbone", "Resize_FPN"]
+__all__ = ["Resize_FPN"]
 from omegaconf import DictConfig
 
 import torch.nn as nn
 import torch.nn.functional as F
 from functools import partial
-
 
 class ResBlock(nn.Module):
     def __init__(self, channel_size: int, negative_slope: float = 0.2):
