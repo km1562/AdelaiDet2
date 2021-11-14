@@ -64,8 +64,8 @@ class TextEvaluator(DatasetEvaluator):
             self._word_spotting = False
         else:
             self._text_eval_gt_path = ""
-        self._text_eval_confidence = cfg.MODEL.FCOS.INFERENCE_TH_TEST
-        # self._text_eval_confidence = cfg.MODEL.FCOS.INFERENCE_TH_TEST_EVAL_FORMAT
+        # self._text_eval_confidence = cfg.MODEL.FCOS.INFERENCE_TH_TEST
+        self._text_eval_confidence = cfg.MODEL.FCOS.INFERENCE_TH_TEST_EVAL_FORMAT
     def reset(self):
         self._predictions = []
 
