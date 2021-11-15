@@ -9,7 +9,7 @@ MODEL:
     IN_FEATURES: ["res2", "res3", "res4", "res5"]
     OUT_CHANNELS: 256
     NUM_REPEATS: 2
-    NORM: "GN"
+    NORM: "SyncBN"
   RESNETS:
     DEPTH: 50
   BATEXT:
@@ -25,12 +25,17 @@ MODEL:
 SOLVER:
   IMS_PER_BATCH: 2
   BASE_LR: 0.001
-  STEPS: (320000, )
-  MAX_ITER: 400000
+  STEPS: (80000, )
+  MAX_ITER: 100000
   CHECKPOINT_PERIOD: 10000
 TEST:
   EVAL_PERIOD: 10000
 DATASETS:
   TRAIN: ("ctw1500_word_train",)
   TEST: ("ctw1500_word_test",)
+INPUT:
+  CROP:
+    ENABLED: False
+    CROP_INSTANCE: False
+    SIZE: [0.1, 0.1]
 OUTPUT_DIR: "output/batext/ctw1500/add_global_v2_attn_R_50"

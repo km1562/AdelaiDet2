@@ -365,27 +365,27 @@ _C.MODEL.FCPOSE.BASIS_MODULE.LOSS_WEIGHT = 0.2
 _C.MODEL.FCPOSE.BASIS_MODULE.BN_TYPE = "SyncBN"
 
 # ---------------------------------------------------------------------------- #
-# TextFuse11111 Seg Head
+# TextFuse Seg Head
 #TODO 调整
 # ---------------------------------------------------------------------------- #
 _C.MODEL.TEXTFUSENET_SEG_HEAD = CN()
 _C.MODEL.TEXTFUSENET_SEG_HEAD.CHANNELS = 256
 # the num of fpn features used to fuse
-_C.MODEL.TEXTFUSENET_SEG_HEAD.NUM_FPN_FEATURES = 1
-# _C.MODEL.TEXTFUSENET_SEG_HEAD.NUM_FPN_FEATURES = 3
+# _C.MODEL.TEXTFUSENET_SEG_HEAD.NUM_FPN_FEATURES = 1
+_C.MODEL.TEXTFUSENET_SEG_HEAD.NUM_FPN_FEATURES = 3
 # the num of conv3x3 used to extract fused features
-# _C.MODEL.TEXTFUSENET_SEG_HEAD.NUM_CONV3 = 4
+_C.MODEL.TEXTFUSENET_SEG_HEAD.NUM_CONV3 = 4
 # _C.MODEL.TEXTFUSENET_SEG_HEAD.NUM_CONV3 = 2
-_C.MODEL.TEXTFUSENET_SEG_HEAD.NUM_CONV3 = 1
+# _C.MODEL.TEXTFUSENET_SEG_HEAD.NUM_CONV3 = 1
 # the num of segmentic classes
 _C.MODEL.TEXTFUSENET_SEG_HEAD.NUM_CLASSES =2
 
 # _C.MODEL.TEXTFUSENET_SEG_HEAD.POOLER_RESOLUTION = 14
-_C.MODEL.TEXTFUSENET_SEG_HEAD.POOLER_RESOLUTION = (8, 32)
+_C.MODEL.TEXTFUSENET_SEG_HEAD.POOLER_RESOLUTION = (8,128)
 _C.MODEL.TEXTFUSENET_SEG_HEAD.SAMPLING_RATIO = 2
 _C.MODEL.TEXTFUSENET_SEG_HEAD.POOLER_TYPE = "ROIAlignV2"
 # 0->0.25, 1->0.125, 2->0.0625, 3->0.03125
-_C.MODEL.TEXTFUSENET_SEG_HEAD.FPN_FEATURES_FUSED_LEVEL = 0
+_C.MODEL.TEXTFUSENET_SEG_HEAD.FPN_FEATURES_FUSED_LEVEL = 1
 # _C.MODEL.TEXTFUSENET_SEG_HEAD.FPN_FEATURES_FUSED_LEVEL = 0
 _C.MODEL.TEXTFUSENET_SEG_HEAD.POOLER_SCALES = (0.0625,)
 
@@ -397,3 +397,23 @@ _C.MODEL.PREDICT_PROB.CHANNELS = 256
 _C.MODEL.PREDICT_PROB.NUM_FPN_FEATURES = 3
 _C.MODEL.PREDICT_PROB.NUM_CONV3 = 4
 _C.MODEL.PREDICT_PROB.FPN_FEATURES_FUSED_LEVEL = 2
+
+# --------------------------------------------------------------------------- #
+# Semantic Segmentation Head
+# ---------------------------------------------------------------------------- #
+_C.MODEL.TEXTFUSENET_MUTIL_PATH_FUSE_ON = False
+_C.MODEL.SEM_SEG_HEAD = CN()
+_C.MODEL.SEM_SEG_HEAD.NAME = "SemSegFPNHead"
+_C.MODEL.SEM_SEG_HEAD.IN_FEATURES = ["p2", "p3", "p4", "p5"]
+# Label in the semantic segmentation ground truth that is ignored, i.e., no loss is calculated for
+# the correposnding pixel.
+_C.MODEL.SEM_SEG_HEAD.IGNORE_VALUE = 255
+# Number of classes in the semantic segmentation head
+_C.MODEL.SEM_SEG_HEAD.NUM_CLASSES = 54
+# Number of channels in the 3x3 convs inside semantic-FPN heads.
+_C.MODEL.SEM_SEG_HEAD.CONVS_DIM = 128
+# Outputs from semantic-FPN heads are up-scaled to the COMMON_STRIDE stride.
+_C.MODEL.SEM_SEG_HEAD.COMMON_STRIDE = 4
+# Normalization method for the convolution layers. Options: "" (no norm), "GN".
+_C.MODEL.SEM_SEG_HEAD.NORM = "GN"
+_C.MODEL.SEM_SEG_HEAD.LOSS_WEIGHT = 1.0

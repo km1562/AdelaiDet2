@@ -227,7 +227,7 @@ class Seg_Text_Head(nn.Module):
                 # image_shape = [proposals[0].image_size[1], proposals[0].image_size[0]]
                 # seg_logits, global_context = self.seg_head(features[:2], self.fpn_features_fused_level, beziers,
                 #                                            image_shape)
-                seg_logits, global_context = self.seg_head(features[0], self.fpn_features_fused_level, beziers,
+                seg_logits, global_context = self.seg_head(features, self.fpn_features_fused_level, beziers,
                                                            image_shape)
                 seg_loss = build_seg_head_loss()
                 losses.update({'seg_loss': seg_loss(seg_logits, targets),})
@@ -237,7 +237,7 @@ class Seg_Text_Head(nn.Module):
 
             if self.mutil_path_fuse_on:
                 image_shape = [proposals[0].image_size[1], proposals[0].image_size[0]]
-                seg_logits, global_context = self.seg_head(features[0], self.fpn_features_fused_level, beziers,
+                seg_logits, global_context = self.seg_head(features, self.fpn_features_fused_level, beziers,
                                                            image_shape)
                 # seg_loss = build_seg_head_loss()
                 # losses = {'seg_loss': seg_loss(seg_logits, targets), }
