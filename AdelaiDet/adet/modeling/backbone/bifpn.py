@@ -8,7 +8,6 @@ from detectron2.modeling.backbone import Backbone, build_resnet_backbone
 from detectron2.modeling import BACKBONE_REGISTRY
 from .mobilenet import build_mnv2_backbone
 # from .resizer import Resizer
-
 __all__ = []
 
 
@@ -365,7 +364,6 @@ class BiFPN(Backbone):
                 ["n2", "n3", ..., "n6"].
         """
         bottom_up_features = self.bottom_up(x)
-        img = x #TODO
         feats = [bottom_up_features[f] for f in self.in_features]
 
         for bifpn in self.repeated_bifpn:

@@ -84,7 +84,8 @@ def gen_cam(feature_map, grads):
         cam += w * feature_map[i, :, :]
 
     cam = np.maximum(cam, 0)
-    cam = cv2.resize(cam, (32, 32))
+    # cam = cv2.resize(cam, (32, 32))
+    cam = cv2.resize(cam, (255, 255))
     cam -= np.min(cam)
     cam /= np.max(cam)
 
@@ -132,24 +133,26 @@ class Trainer(DefaultTrainer):
 
         self.model.proposal_generator.fcos_head.cls_logits.register_forward_hook(farward_hook)
         self.model.proposal_generator.fcos_head.cls_logits.register_forward_hook(backward_hook)
-
         with EventStorage(start_iter) as self.storage:
             self.before_train()
             for self.iter in range(start_iter, max_iter):
                 self.before_step()
-                global img
                 self.run_step()
+
                 output_dir = self.cfg.OUTPUT_DIR
                 #生成cam
                 # grads_val = grad_block[0].cpu().data.numpy().squeeze()
                 # fmap = fmap_block[0].cpu().data.numpy().squeeze()
+
                 grads_val = grad_block[0].cpu().data.numpy()
                 fmap = fmap_block[0].cpu().data.numpy().squeeze(0)
                 cam = gen_cam(fmap, grads_val)
-
-                img_show = np.float32(cv2.resize(img, (32, 32))) / 255
+                path_img = self._trainer.ima_to_show_CAM[0]['file_name']
+                img = cv2.imread(path_img, 1)
+                img_show = np.float32(cv2.resize(img, (255, 255))) / 255
                 show_cam_on_image(img_show, cam, output_dir)
                 exit()
+
                 self.after_step()
             self.after_train()
 
