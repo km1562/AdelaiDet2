@@ -365,6 +365,7 @@ class BiFPN(Backbone):
                 ["n2", "n3", ..., "n6"].
         """
         bottom_up_features = self.bottom_up(x)
+        img = x #TODO
         feats = [bottom_up_features[f] for f in self.in_features]
 
         for bifpn in self.repeated_bifpn:
