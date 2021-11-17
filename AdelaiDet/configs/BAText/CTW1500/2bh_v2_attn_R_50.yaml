@@ -7,8 +7,8 @@ MODEL:
     IN_FEATURES: ["res2", "res3", "res4", "res5"]
     OUT_CHANNELS: 256
     NUM_REPEATS: 2
-#    NORM: "SyncBN"
-    NORM: "GN"
+    NORM: "SyncBN"
+#    NORM: "GN"
   RESNETS:
     DEPTH: 50
   BATEXT:
