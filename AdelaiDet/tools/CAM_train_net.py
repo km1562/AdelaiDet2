@@ -56,13 +56,13 @@ def backward_hook(module, grad_in, grad_out):
 def farward_hook(module, input, output):
     fmap_block.append(output)
 
-def show_cam_on_image(img, mask, out_dir):
+def show_cam_on_image(img, mask, out_dir, index):
     heatmap = cv2.applyColorMap(np.uint8(255*mask), cv2.COLORMAP_JET)
     heatmap = np.float32(heatmap) / 255
     cam = heatmap + np.float32(img)
     cam = cam / np.max(cam)
 
-    path_cam_img = os.path.join(out_dir, "cam.jpg")
+    path_cam_img = os.path.join(out_dir, "cam_" + str(index) + ".jpg")
     path_raw_img = os.path.join(out_dir, "raw.jpg")
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
@@ -139,19 +139,24 @@ class Trainer(DefaultTrainer):
                 self.before_step()
                 self.run_step()
 
+                ###########################
                 output_dir = self.cfg.OUTPUT_DIR
                 #生成cam
                 # grads_val = grad_block[0].cpu().data.numpy().squeeze()
                 # fmap = fmap_block[0].cpu().data.numpy().squeeze()
+                for i, grads_val in enumerate(grad_block):
+                    grads_val = grads_val.cpu().data.numpy()
+                    fmap = fmap_block[i].cpu().data.numpy().squeeze(0)
+                    cam = gen_cam(fmap, grads_val)
+                    path_img = self._trainer.ima_to_show_CAM[0]['file_name']
+                    img = cv2.imread(path_img, 1)
+                    img_show = np.float32(cv2.resize(img, (255, 255))) / 255
+                    show_cam_on_image(img_show, cam, output_dir, i)
 
-                grads_val = grad_block[0].cpu().data.numpy()
-                fmap = fmap_block[0].cpu().data.numpy().squeeze(0)
-                cam = gen_cam(fmap, grads_val)
-                path_img = self._trainer.ima_to_show_CAM[0]['file_name']
-                img = cv2.imread(path_img, 1)
-                img_show = np.float32(cv2.resize(img, (255, 255))) / 255
-                show_cam_on_image(img_show, cam, output_dir)
+                with open(output_dir + "/which_pic.txt", "a+") as f:
+                    f.write(path_img + '\n')
                 exit()
+                ###########################
 
                 self.after_step()
             self.after_train()
