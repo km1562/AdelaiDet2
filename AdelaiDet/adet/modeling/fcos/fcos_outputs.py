@@ -378,7 +378,7 @@ class FCOSOutputs(nn.Module):
             loss_denorm = max(reduce_mean(ctrness_targets_sum).item(), 1e-6)
             extras["loss_denorm"] = loss_denorm
 
-            reg_loss = self.loc_loss_func(ious, gious, ctrness_targets) / loss_denorm
+            reg_loss = self.loc_loss_func(ious, gious, ctrness_targets) / loss_denorm  #ctrness_targets居然是作为权重，去计算iou_loss的
             losses["loss_fcos_loc"] = reg_loss
 
             ctrness_loss = F.binary_cross_entropy_with_logits(

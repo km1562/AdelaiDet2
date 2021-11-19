@@ -99,10 +99,17 @@ def fcos_losses(
             ctrness_targets
         ) / loss_denorm
         
-        ctrness_loss = F.binary_cross_entropy_with_logits(
-            ctrness_pred,
-            ctrness_targets,
-            reduction="sum"
+        #ctrness_loss = F.binary_cross_entropy_with_logits(
+        #   ctrness_pred,
+        #    ctrness_targets,
+        #    reduction="sum"
+        #) / num_pos_avg
+        ctrness_loss = sigmoid_focal_loss_jit(
+          ctrness_pred,
+          ctrness_targets,
+          alpha=focal_loss_alpha,
+          gamma=focal_loss_gamma,
+          reduction="sum",
         ) / num_pos_avg
     else:
         reg_loss = reg_pred.sum() * 0

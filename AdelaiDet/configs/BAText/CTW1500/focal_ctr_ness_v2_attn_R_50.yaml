@@ -22,8 +22,8 @@ SOLVER:
   IMS_PER_BATCH: 4
   BASE_LR: 0.001
   STEPS: (80000, )
-  MAX_ITER: 100000
+  MAX_ITER: 120000
   CHECKPOINT_PERIOD: 10000
 TEST:
   EVAL_PERIOD: 10000
-OUTPUT_DIR: "output/batext/ctw1500/bifpn_bilinear_v2_attn_R_50"
+OUTPUT_DIR: "output/batext/ctw1500/focal_ctrness_v2_attn_R_50"
