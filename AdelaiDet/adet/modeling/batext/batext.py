@@ -70,9 +70,9 @@ class Scale(nn.Module):
 #         return prob
 
 class Channel_Attention(nn.Module):
-    def __init__(self, in_planes, ratio=16):
+    def __init__(self, in_planes=256, ratio=16):
         super(Channel_Attention, self).__init__()
-        self.avg_pool = nn.AdaptiveAvgPool1d(1)
+        self.avg_pool = nn.AdaptiveAvgPool2d(1)
         self.max_pool = nn.AdaptiveMaxPool2d(1)
 
         self.fc = nn.Sequential(
@@ -95,7 +95,7 @@ class Spatial_Channel(nn.Module):
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
-        max_out = torch.max(x, dim=1, keepdim=True)
+        max_out = torch.max(x, dim=1, keepdim=True).values
         avg_out = torch.mean(x, dim=1, keepdim=True)
         x = torch.cat([max_out, avg_out], dim=1)
         x = self.conv1(x) # (B, 1, H, W)
@@ -349,7 +349,7 @@ class FCOSHead(nn.Module):
             if yield_bbox_towers:
                 bbox_towers.append(bbox_tower)
 
-            logits.append(self.cls_logits(cls_tower))
+            logits.append(self.cbam(self.cls_logits(cls_tower)))
             ctrness.append(self.ctrness(bbox_tower))
             reg = self.bbox_pred(bbox_tower)
             if self.scales is not None:
