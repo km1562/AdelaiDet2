@@ -69,6 +69,51 @@ class Scale(nn.Module):
 #         print("prob's value", prob)
 #         return prob
 
+class Channel_Attention(nn.Module):
+    def __init__(self, in_planes, ratio=16):
+        super(Channel_Attention, self).__init__()
+        self.avg_pool = nn.AdaptiveAvgPool1d(1)
+        self.max_pool = nn.AdaptiveMaxPool2d(1)
+
+        self.fc = nn.Sequential(
+            nn.Conv2d(in_planes, in_planes // 16, 1, bias=False),
+            nn.ReLU(),
+            nn.Conv2d(in_planes // 16, in_planes, 1, bias=False)
+        )
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, x):
+        avg_out = self.fc(self.avg_pool(x))  #(B, C, 1, 1)
+        max_out = self.fc(self.max_pool(x))  #(B, C, 1, 1)
+        out = avg_out + max_out  #(B, C, 1, 1)
+        return self.sigmoid(out) #(B, C, 1, 1)
+
+class Spatial_Channel(nn.Module):
+    def __init__(self, kernel_size=7):
+        super(Spatial_Channel, self).__init__()
+        self.conv1 = nn.Conv2d(2, 1, kernel_size, padding=kernel_size // 2,bias=False)
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, x):
+        max_out = torch.max(x, dim=1, keepdim=True)
+        avg_out = torch.mean(x, dim=1, keepdim=True)
+        x = torch.cat([max_out, avg_out], dim=1)
+        x = self.conv1(x) # (B, 1, H, W)
+        return self.sigmoid(x) #(B, 1, H, W)
+
+class CBAM(nn.Module):
+    def __init__(self):
+        super(CBAM, self).__init__()
+        self.channel_attention = Channel_Attention()
+        self.spatial_channel = Spatial_Channel()
+
+    def forward(self, x):
+        channel_x = self.channel_attention(x)  #(B, C, 1, 1)
+        x = torch.multiply(x, channel_x) #(B, C, H, W)
+        spatial_x = self.spatial_channel(x) #(B, 1, H, W)
+        x = torch.multiply(x, spatial_x) #(B, C, H, W)
+        return x
+
 @PROPOSAL_GENERATOR_REGISTRY.register()
 class BAText(nn.Module):
     """
@@ -105,6 +150,8 @@ class BAText(nn.Module):
         self.sizes_of_interest = soi
         self.fcos_head = FCOSHead(cfg, [input_shape[f] for f in self.in_features])
         # self.predict_pre_nms_thresh = Predict_pre_nms_thresh(cfg)
+
+
 
     def forward_head(self, features, top_module=None):
         features = [features[f] for f in self.in_features]
@@ -287,6 +334,8 @@ class FCOSHead(nn.Module):
         bias_value = -math.log((1 - prior_prob) / prior_prob)
         torch.nn.init.constant_(self.cls_logits.bias, bias_value)
 
+        self.cbam = CBAM()
+
     def forward(self, x, top_module=None, yield_bbox_towers=False):
         logits = []
         bbox_reg = []
@@ -295,7 +344,7 @@ class FCOSHead(nn.Module):
         bbox_towers = []
         for l, feature in enumerate(x):
             feature = self.share_tower(feature)
-            cls_tower = self.cls_tower(feature)
+            cls_tower = self.cbam(self.cls_tower(feature))
             bbox_tower = self.bbox_tower(feature)
             if yield_bbox_towers:
                 bbox_towers.append(bbox_tower)
