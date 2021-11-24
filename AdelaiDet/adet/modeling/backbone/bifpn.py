@@ -8,7 +8,6 @@ from detectron2.modeling.backbone import Backbone, build_resnet_backbone
 from detectron2.modeling import BACKBONE_REGISTRY
 from .mobilenet import build_mnv2_backbone
 # from .resizer import Resizer
-
 __all__ = []
 
 
