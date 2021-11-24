@@ -134,6 +134,8 @@ class Trainer(DefaultTrainer):
         #————————————————————添加hooker
         self.model.proposal_generator.fcos_head.cls_logits.register_forward_hook(farward_hook)
         self.model.proposal_generator.fcos_head.cls_logits.register_forward_hook(backward_hook)
+        self.model.proposal_generator.fcos_head.cbam.register_forward_hook(backward_hook)
+        self.model.proposal_generator.fcos_head.cbam_cls_logits.register_forward_hook(backward_hook)
 
         with EventStorage(start_iter) as self.storage:
             self.before_train()
