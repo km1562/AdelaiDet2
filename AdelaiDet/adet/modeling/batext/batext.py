@@ -70,15 +70,15 @@ class Scale(nn.Module):
 #         return prob
 
 class Channel_Attention(nn.Module):
-    def __init__(self, in_planes=256, ratio=16):
+    def __init__(self, inchannels=256, ratio=16):
         super(Channel_Attention, self).__init__()
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
         self.max_pool = nn.AdaptiveMaxPool2d(1)
 
         self.fc = nn.Sequential(
-            nn.Conv2d(in_planes, in_planes // 16, 1, bias=False),
+            nn.Conv2d(inchannels, inchannels // ratio, 1, bias=False),
             nn.ReLU(),
-            nn.Conv2d(in_planes // 16, in_planes, 1, bias=False)
+            nn.Conv2d(inchannels // ratio, inchannels, 1, bias=False)
         )
         self.sigmoid = nn.Sigmoid()
 
@@ -102,9 +102,9 @@ class Spatial_Channel(nn.Module):
         return self.sigmoid(x) #(B, 1, H, W)
 
 class CBAM(nn.Module):
-    def __init__(self):
+    def __init__(self, inchannels=256, ratio=16):
         super(CBAM, self).__init__()
-        self.channel_attention = Channel_Attention()
+        self.channel_attention = Channel_Attention(inchannels, ratio)
         self.spatial_channel = Spatial_Channel()
 
     def forward(self, x):
@@ -266,6 +266,8 @@ class FCOSHead(nn.Module):
             in_channels (int): number of channels of the input feature
         """
         super().__init__()
+
+
         # TODO: Implement the sigmoid version first.
         self.num_classes = cfg.MODEL.FCOS.NUM_CLASSES
         self.fpn_strides = cfg.MODEL.FCOS.FPN_STRIDES
@@ -281,6 +283,9 @@ class FCOSHead(nn.Module):
         assert len(set(in_channels)) == 1, "Each level must have the same channel!"
         in_channels = in_channels[0]
 
+        self.cbam = CBAM(inchannels=256)
+        self.cbam_cls_logits = CBAM(inchannels=1, ratio=1)
+
         for head in head_configs:
             tower = []
             num_convs, use_deformable = head_configs[head]
@@ -289,6 +294,7 @@ class FCOSHead(nn.Module):
             else:
                 conv_func = nn.Conv2d
             for i in range(num_convs):
+                # if head != "bbox":
                 tower.append(conv_func(
                     in_channels, in_channels,
                     kernel_size=3, stride=1,
@@ -297,6 +303,13 @@ class FCOSHead(nn.Module):
                 if norm == "GN":
                     tower.append(nn.GroupNorm(32, in_channels))
                 tower.append(nn.ReLU())
+                # else:
+                #     tower.append(
+                #         CBAM(in_channels)
+                #     )
+                #     if norm == "GN":
+                #         tower.append(nn.GroupNorm(32, in_channels))
+                #     tower.append(nn.ReLU())
             self.add_module('{}_tower'.format(head),
                             nn.Sequential(*tower))
 
@@ -334,8 +347,6 @@ class FCOSHead(nn.Module):
         bias_value = -math.log((1 - prior_prob) / prior_prob)
         torch.nn.init.constant_(self.cls_logits.bias, bias_value)
 
-        self.cbam = CBAM()
-
     def forward(self, x, top_module=None, yield_bbox_towers=False):
         logits = []
         bbox_reg = []
@@ -349,7 +360,7 @@ class FCOSHead(nn.Module):
             if yield_bbox_towers:
                 bbox_towers.append(bbox_tower)
 
-            logits.append(self.cbam(self.cls_logits(cls_tower)))
+            logits.append(self.cbam_cls_logits(self.cls_logits(cls_tower)))  #(B, 1, H, W)
             ctrness.append(self.ctrness(bbox_tower))
             reg = self.bbox_pred(bbox_tower)
             if self.scales is not None:
