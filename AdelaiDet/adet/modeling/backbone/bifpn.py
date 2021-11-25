@@ -249,6 +249,7 @@ class SingleBiFPN(Backbone):
                             size=(target_h, target_w),
                             mode="nearest"
                         )
+                        print("bifpn's interpolate is nearest")
                 else:
                     raise NotImplementedError()
                 input_nodes.append(input_node)
