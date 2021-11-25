@@ -247,8 +247,8 @@ class SingleBiFPN(Backbone):
                         input_node = F.interpolate(
                             input_node,
                             size=(target_h, target_w),
-                            # mode="nearest"
-                            mode="bilinear"
+                            mode="nearest"
+                            # mode="bilinear"
                         )
                 else:
                     raise NotImplementedError()
