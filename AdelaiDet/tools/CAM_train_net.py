@@ -133,7 +133,7 @@ class Trainer(DefaultTrainer):
 
         #————————————————————添加hooker
         self.model.proposal_generator.fcos_head.cls_logits.register_forward_hook(farward_hook)
-        self.model.proposal_generator.fcos_head.cls_logits.register_forward_hook(backward_hook)
+        self.model.proposal_generator.fcos_head.cls_logits.register_backward_hook(backward_hook)
 
         with EventStorage(start_iter) as self.storage:
             self.before_train()
@@ -146,8 +146,9 @@ class Trainer(DefaultTrainer):
                 #生成cam
                 # grads_val = grad_block[0].cpu().data.numpy().squeeze()
                 # fmap = fmap_block[0].cpu().data.numpy().squeeze()
+                grad_block.reverse()
                 for i, grads_val in enumerate(grad_block):
-                    grads_val = grads_val.cpu().data.numpy()
+                    grads_val = grads_val.cpu().data.numpy().squeeze(0)
                     fmap = fmap_block[i].cpu().data.numpy().squeeze(0)
                     cam = gen_cam(fmap, grads_val)
                     path_img = self._trainer.ima_to_show_CAM[0]['file_name']
