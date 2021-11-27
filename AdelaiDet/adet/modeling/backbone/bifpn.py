@@ -7,7 +7,7 @@ from detectron2.layers import Conv2d, ShapeSpec, get_norm
 from detectron2.modeling.backbone import Backbone, build_resnet_backbone
 from detectron2.modeling import BACKBONE_REGISTRY
 from .mobilenet import build_mnv2_backbone
-# from .resizer import Resizer
+from .resizer import Resizer
 
 __all__ = []
 
@@ -200,7 +200,7 @@ class SingleBiFPN(Backbone):
                 norm=get_norm(norm, out_channels),
                 bias=(norm == "")
             ))
-        # self.Resize = Resizer()
+        self.Resize = Resizer()
 
     def forward(self, feats):
         """
@@ -245,12 +245,18 @@ class SingleBiFPN(Backbone):
                     )
                 elif h <= target_h and w <= target_w:
                     if h < target_h or w < target_w:
-                        input_node = F.interpolate(
+                        # input_node = F.interpolate(
+                        #     input_node,
+                        #     size=(target_h, target_w),
+                        #     mode="nearest"
+                        #     # mode="bilinear"
+                        # )
+                        input_node = self.Resize(
                             input_node,
                             size=(target_h, target_w),
-                            mode="nearest"
-                            # mode="bilinear"
-                        )
+                            # mode="nearest"
+                            mode="bilinear"
+                    )
                 else:
                     raise NotImplementedError()
                 input_nodes.append(input_node)
