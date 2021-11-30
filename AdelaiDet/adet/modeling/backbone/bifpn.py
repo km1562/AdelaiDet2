@@ -400,7 +400,7 @@ def build_fcos_resnet_bifpn_backbone(cfg, input_shape: ShapeSpec):
         bottom_up = build_resnet_backbone(cfg, input_shape)
     if cfg.MODEL.RESNETS.USE_FPA:
         for i, stage in enumerate(bottom_up.stages):
-            if i == len(bottom_up.stages) - 1 or i == len(bottom_up.stages) - 2:
+            if i == len(bottom_up.stages) - 1 or i == len(bottom_up.stages) - 2 or i == len(bottom_up.stages) - 3:
                 continue
             in_channel = 256
             bottom_up.stages[i].add_module('FPA_{0}'.format(i), FPA(in_channel * (2 ** i)))
