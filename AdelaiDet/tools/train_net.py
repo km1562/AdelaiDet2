@@ -45,9 +45,7 @@ from adet.checkpoint import AdetCheckpointer
 from adet.evaluation import TextEvaluator
 
 # import torch.distributed as dist
-# dist.init_process_group('gloo', init_method='file:///tmp/somefile', rank=0, world_size=1)
-
-
+# dist.init_process_group(backend='nccl', init_method='tcp://localhost:23456', rank=0, world_size=1)
 
 class Trainer(DefaultTrainer):
     """
