@@ -16,28 +16,37 @@ class FPA(nn.Module):
 
         # Master branch
         self.conv_master = nn.Conv2d(self.channels_cond, channels, kernel_size=1, bias=False) #2048,2048
-        self.bn_master = NaiveSyncBatchNorm(channels)
+        # self.bn_master = NaiveSyncBatchNorm(channels)
+        self.bn_master = NaiveGroupNorm(32, channels)
 
         # Global pooling branch
         self.conv_gpb = nn.Conv2d(self.channels_cond, channels, kernel_size=1, bias=False)#2048,2048
-        self.bn_gpb = NaiveSyncBatchNorm(channels)
+        # self.bn_gpb = NaiveSyncBatchNorm(channels)
+        self.bn_gpb = NaiveGroupNorm(32, channels)
 
         # C333 because of the shape of last feature maps is (16, 16).
         # self.conv7x7_1 = nn.Conv2d(self.channels_cond, channels_mid, kernel_size=(7, 7), stride=2, padding=3, bias=False) #2048,512
         self.conv7x7_1 = nn.Conv2d(self.channels_cond, channels_mid, kernel_size=(7, 7), stride=2, padding=3,
                                    bias=False)  # 2048,512
-        self.bn1_1 = NaiveSyncBatchNorm(channels_mid)
+        # self.bn1_1 = NaiveSyncBatchNorm(channels_mid)
+        self.bn1_1 = NaiveGroupNorm(32, channels_mid)
+
         # self.conv5x5_1 = nn.Conv2d(channels_mid, channels_mid, kernel_size=(5, 5), stride=2, padding=2, bias=False) #512,512
         self.conv5x5_1 = nn.Conv2d(channels_mid, channels_mid, kernel_size=(5, 5), stride=1, padding=2,
                                    bias=False)  # 512,512
-        self.bn2_1 = NaiveSyncBatchNorm(channels_mid)
+        # self.bn2_1 = NaiveSyncBatchNorm(channels_mid)
+        self.bn2_1 = NaiveGroupNorm(32, channels_mid)
+
         # self.conv3x3_1 = nn.Conv2d(channels_mid, channels_mid, kernel_size=(3, 3), stride=2, padding=1, bias=False)#512,512
         # self.bn3_1 = nn.BatchNorm2d(channels_mid)
 
         self.conv7x7_2 = nn.Conv2d(channels_mid, channels_mid, kernel_size=(7, 7), stride=1, padding=3, bias=False)#512,512
-        self.bn1_2 = NaiveSyncBatchNorm(channels_mid)
+        # self.bn1_2 = NaiveSyncBatchNorm(channels_mid)
+        self.bn1_2 = NaiveGroupNorm(32, channels_mid)
+
         self.conv5x5_2 = nn.Conv2d(channels_mid, channels_mid, kernel_size=(5, 5), stride=1, padding=2, bias=False)#512,512
-        self.bn2_2 = NaiveSyncBatchNorm(channels_mid)
+        # self.bn2_2 = NaiveSyncBatchNorm(channels_mid)
+        self.bn2_2 = NaiveGroupNorm(32, channels_mid)
         # self.conv3x3_2 = nn.Conv2d(channels_mid, channels_mid, kernel_size=(3, 3), stride=1, padding=1, bias=False)#512,512
         # self.bn3_2 = nn.BatchNorm2d(channels_mid)
 
