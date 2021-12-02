@@ -252,6 +252,11 @@ class SingleBiFPN(Backbone):
                             # mode="bilinear"
                         )
                 else:
+                    with open("/home/wengkangming/map_file/AdelaiDet2/AdelaiDet/output/batext/ctw1500/bi_fpn_h_w.txt", "a+") as f:
+                        f.write("h is :" + str(h) + '\n')
+                        f.write("w is :" + str(w) + '\n')
+                        f.write("target_h is :" + str(target_h) + '\n')
+                        f.write("target_w is :" + str(target_w) + '\n')
                     raise NotImplementedError()
                 input_nodes.append(input_node)
 
