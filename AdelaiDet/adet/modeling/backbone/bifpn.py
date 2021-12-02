@@ -253,6 +253,7 @@ class SingleBiFPN(Backbone):
                             # mode="bilinear"
                         )
                 else:
+
                     raise NotImplementedError()
                 input_nodes.append(input_node)
 
