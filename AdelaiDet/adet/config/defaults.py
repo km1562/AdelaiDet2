@@ -15,7 +15,7 @@ _C.INPUT.CROP.CROP_INSTANCE = True
 # Additional Configs
 # ---------------------------------------------------------------------------- #
 
-_C.MODEL.RESNETS.USE_FPA = True
+_C.MODEL.RESNETS.USE_FPA = False
 
 # ---------------------------------------------------------------------------- #
 # FCOS Head
