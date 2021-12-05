@@ -139,8 +139,13 @@ class BAText(nn.Module):
         weights = F.relu(self.__getattr__(self.name))
         norm_weights = weights / (weights.sum() + 0.0001)
         # new_node = torch.stack(features, dim=-1)
-        new_node = (norm_weights * new_node).sum(dim=-1)
-        new_node = swish(new_node)
+        # new_node = (norm_weights * new_node).sum(dim=-1)  #这里会变成一个节点！
+        # new_node = swish(new_node)
+        weights_features = []
+        for i, feature in enumerate(features):
+            norm_weight = norm_weights[i]
+            weithg_feature = feature * norm_weight
+            weights_features.append(weithg_feature)
 
         locations = self.compute_locations(features)
 
