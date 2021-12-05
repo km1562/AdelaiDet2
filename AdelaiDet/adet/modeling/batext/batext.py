@@ -10,6 +10,7 @@ from detectron2.modeling.proposal_generator.build import PROPOSAL_GENERATOR_REGI
 from adet.layers import DFConv2d, IOULoss
 from .batext_outputs import BATextOutputs
 from detectron2.layers import DeformConv
+from ..backbone.fpa import FPA
 
 __all__ = ["BAText"]
 
@@ -286,6 +287,7 @@ class FCOSHead(nn.Module):
         prior_prob = cfg.MODEL.FCOS.PRIOR_PROB
         bias_value = -math.log((1 - prior_prob) / prior_prob)
         torch.nn.init.constant_(self.cls_logits.bias, bias_value)
+        self.fpa = FPA(256)
 
     def forward(self, x, top_module=None, yield_bbox_towers=False):
         logits = []
@@ -297,6 +299,8 @@ class FCOSHead(nn.Module):
             feature = self.share_tower(feature)
             cls_tower = self.cls_tower(feature)
             bbox_tower = self.bbox_tower(feature)
+            if l in [0,1,3]:
+                cls_tower = self.fpa(cls_tower)
             if yield_bbox_towers:
                 bbox_towers.append(bbox_tower)
 
