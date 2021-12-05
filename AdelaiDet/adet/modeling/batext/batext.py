@@ -147,6 +147,7 @@ class BAText(nn.Module):
             weithg_feature = feature * norm_weight
             weithg_feature = swish(weithg_feature)
             weights_features.append(weithg_feature)
+
         features = weights_features
 
         locations = self.compute_locations(features)
