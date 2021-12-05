@@ -114,6 +114,7 @@ class BAText(nn.Module):
             torch.ones(len(self.in_features), dtype=torch.float32),
             requires_grad=True
         ))
+        # self.use_weight = cfg.MODEL.FCOS.USE_WEIGHT
 
     def forward_head(self, features, top_module=None):
         features = [features[f] for f in self.in_features]
@@ -136,6 +137,7 @@ class BAText(nn.Module):
         """
 
         features = [features[f] for f in self.in_features]
+
         weights = F.relu(self.__getattr__(self.name))
         norm_weights = weights / (weights.sum() + 0.0001)
         # new_node = torch.stack(features, dim=-1)
