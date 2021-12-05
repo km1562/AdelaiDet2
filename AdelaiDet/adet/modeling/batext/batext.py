@@ -145,7 +145,9 @@ class BAText(nn.Module):
         for i, feature in enumerate(features):
             norm_weight = norm_weights[i]
             weithg_feature = feature * norm_weight
+            weithg_feature = swish(weithg_feature)
             weights_features.append(weithg_feature)
+        features = weights_features
 
         locations = self.compute_locations(features)
 
