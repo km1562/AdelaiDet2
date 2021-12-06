@@ -307,8 +307,8 @@ class FCOSHead(nn.Module):
 
             #FPAm module for lower feature
             if l in[0,1,2]:
-                cls_tower = self.slc_fpa(cls_tower)
-                bbox_tower = self.bbox_fps(bbox_tower)
+                cls_tower = self.cls_fpa(cls_tower)
+                bbox_tower = self.bbox_fpa(bbox_tower)
 
             if yield_bbox_towers:
                 bbox_towers.append(bbox_tower)
