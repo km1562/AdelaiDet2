@@ -251,7 +251,8 @@ class FCOSHead(nn.Module):
                 if norm == "GN":
                     tower.append(nn.GroupNorm(32, in_channels))
                 tower.append(nn.ReLU())
-
+            self.add_module('{}_tower'.format(head),
+                        nn.Sequential(*tower))
 
         self.cls_logits = nn.Conv2d(
             in_channels, self.num_classes,
