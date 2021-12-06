@@ -16,6 +16,8 @@ __all__ = ["BAText"]
 
 INF = 100000000
 
+def swish(x):
+    return x * x.sigmoid()
 
 class Scale(nn.Module):
     def __init__(self, init_value=1.0):
@@ -107,6 +109,15 @@ class BAText(nn.Module):
         self.fcos_head = FCOSHead(cfg, [input_shape[f] for f in self.in_features])
         # self.predict_pre_nms_thresh = Predict_pre_nms_thresh(cfg)
 
+        #generate attention weights
+        self.name = "batext_weights_in_feature"
+        self.__setattr__(self.name, nn.Parameter(
+            torch.ones(len(self.in_features), dtype=torch.float32),
+            requires_grad=True
+        ))
+        # self.register_buffer(self.name, self.__getattr__(self.name))
+        # self.use_weight = cfg.MODEL.FCOS.USE_WEIGHT
+
     def forward_head(self, features, top_module=None):
         features = [features[f] for f in self.in_features]
         pred_class_logits, pred_deltas, pred_centerness, top_feats, bbox_towers = self.fcos_head(
@@ -126,11 +137,25 @@ class BAText(nn.Module):
                 like `scores`, `ori_annotation_file_list` and `mask` (for Mask R-CNN models).
 
         """
+
         features = [features[f] for f in self.in_features]
 
-        #TODO,这里就进行multi_fuse,+卷积softmax对他进行一个阈值的输出，并且融合的feature_fuse要传出去
+        weights = F.relu(self.__getattr__(self.name))
+        norm_weights = weights / (weights.sum() + 0.0001)
+        # new_node = torch.stack(features, dim=-1)
+        # new_node = (norm_weights * new_node).sum(dim=-1)  #这里会变成一个节点！
+        # new_node = swish(new_node)
+        weights_features = []
+        for i, feature in enumerate(features):
+            norm_weight = norm_weights[i]
+            weithg_feature = feature * norm_weight
+            weithg_feature = swish(weithg_feature)
+            weights_features.append(weithg_feature)
+
+        features = weights_features
 
         locations = self.compute_locations(features)
+
         logits_pred, reg_pred, ctrness_pred, top_feats, bbox_towers = self.fcos_head(
             features, top_module, self.yield_proposal)
 
