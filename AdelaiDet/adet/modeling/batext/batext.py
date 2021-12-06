@@ -251,8 +251,7 @@ class FCOSHead(nn.Module):
                 if norm == "GN":
                     tower.append(nn.GroupNorm(32, in_channels))
                 tower.append(nn.ReLU())
-            self.add_module('{}_tower'.format(head),
-                            nn.Sequential(*tower))
+
 
         self.cls_logits = nn.Conv2d(
             in_channels, self.num_classes,
@@ -287,7 +286,12 @@ class FCOSHead(nn.Module):
         prior_prob = cfg.MODEL.FCOS.PRIOR_PROB
         bias_value = -math.log((1 - prior_prob) / prior_prob)
         torch.nn.init.constant_(self.cls_logits.bias, bias_value)
-        self.fpa = FPA(256)
+
+        # self.fpa = FPA(256)
+        self.add_module("cls_fpa",
+                        FPA(256))
+        self.add_module("bbox_fpa",
+                        FPA(256))
 
     def forward(self, x, top_module=None, yield_bbox_towers=False):
         logits = []
@@ -299,8 +303,12 @@ class FCOSHead(nn.Module):
             feature = self.share_tower(feature)
             cls_tower = self.cls_tower(feature)
             bbox_tower = self.bbox_tower(feature)
-            if l in [0,1,3]:
-                cls_tower = self.fpa(cls_tower)
+
+            #FPAm module for lower feature
+            if l in[0,1,2]:
+                cls_tower = self.slc_fpa(cls_tower)
+                bbox_tower = self.bbox_fps(bbox_tower)
+
             if yield_bbox_towers:
                 bbox_towers.append(bbox_tower)
 
