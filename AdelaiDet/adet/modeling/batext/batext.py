@@ -109,11 +109,17 @@ class BAText(nn.Module):
         # self.predict_pre_nms_thresh = Predict_pre_nms_thresh(cfg)
 
         #generate attention weights
-        self.name = "batext_weights_in_feature"
-        self.__setattr__(self.name, nn.Parameter(
-            torch.ones(len(self.in_features), dtype=torch.float32),
-            requires_grad=True
-        ))
+        # self.name = "batext_weights_in_feature"
+        # self.__setattr__(self.name, nn.Parameter(
+        #     torch.ones(len(self.in_features), dtype=torch.float32),
+        #     requires_grad=True
+        # ))
+
+        self.weight_feature = nn.Parameter(
+            torch.ones(len(self.in_features),dtype = torch.float32,
+                       requires_grad=True)
+        )
+
         # self.register_buffer(self.name, self.__getattr__(self.name))
         # self.use_weight = cfg.MODEL.FCOS.USE_WEIGHT
 
@@ -139,7 +145,18 @@ class BAText(nn.Module):
 
         features = [features[f] for f in self.in_features]
 
-        weights = F.relu(self.__getattr__(self.name))
+        # weights = F.relu(self.__getattr__(self.name))
+        # norm_weights = weights / (weights.sum() + 0.0001)
+        # weights_features = []
+        # for i, feature in enumerate(features):
+        #     norm_weight = norm_weights[i]
+        #     weithg_feature = feature * norm_weight
+        #     weithg_feature = swish(weithg_feature)
+        #     weights_features.append(weithg_feature)
+        #
+        # features = weights_features
+
+        weights = F.relu(self.weight_feature)
         norm_weights = weights / (weights.sum() + 0.0001)
         # new_node = torch.stack(features, dim=-1)
         # new_node = (norm_weights * new_node).sum(dim=-1)  #这里会变成一个节点！
