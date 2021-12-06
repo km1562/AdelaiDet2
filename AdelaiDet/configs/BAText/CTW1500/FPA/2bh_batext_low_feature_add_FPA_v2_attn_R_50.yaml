@@ -28,4 +28,4 @@ SOLVER:
   CHECKPOINT_PERIOD: 10000
 TEST:
   EVAL_PERIOD: 10000
-OUTPUT_DIR: "output/batext/ctw1500/batext_FPA_4bh_12w_v2_attn_R_50"
+OUTPUT_DIR: "output/batext/ctw1500/batext_FPA_2bh_12w_v2_attn_R_50"
