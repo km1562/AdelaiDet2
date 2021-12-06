@@ -12,6 +12,8 @@ from adet.layers import conv_with_kaiming_uniform
 from ..poolers import TopPooler
 from .attn_predictor import ATTPredictor
 
+def swish(x):
+    return x * x.sigmoid()
 
 class SeqConvs(nn.Module):
     def __init__(self, conv_dim, roi_size):
