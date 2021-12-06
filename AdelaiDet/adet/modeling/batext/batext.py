@@ -114,6 +114,7 @@ class BAText(nn.Module):
             torch.ones(len(self.in_features), dtype=torch.float32),
             requires_grad=True
         ))
+        # self.register_buffer(self.name, self.__getattr__(self.name))
         # self.use_weight = cfg.MODEL.FCOS.USE_WEIGHT
 
     def forward_head(self, features, top_module=None):
