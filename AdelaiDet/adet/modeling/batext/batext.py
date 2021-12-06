@@ -120,8 +120,6 @@ class BAText(nn.Module):
                        requires_grad=True)
         )
 
-        # self.register_buffer(self.name, self.__getattr__(self.name))
-        # self.use_weight = cfg.MODEL.FCOS.USE_WEIGHT
 
     def forward_head(self, features, top_module=None):
         features = [features[f] for f in self.in_features]
@@ -145,6 +143,7 @@ class BAText(nn.Module):
 
         features = [features[f] for f in self.in_features]
 
+        # generation weight 1
         # weights = F.relu(self.__getattr__(self.name))
         # norm_weights = weights / (weights.sum() + 0.0001)
         # weights_features = []
@@ -156,6 +155,7 @@ class BAText(nn.Module):
         #
         # features = weights_features
 
+        # generation weight 2
         weights = F.relu(self.weight_feature)
         norm_weights = weights / (weights.sum() + 0.0001)
         # new_node = torch.stack(features, dim=-1)

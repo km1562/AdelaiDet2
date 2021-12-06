@@ -180,11 +180,11 @@ class TextHead(nn.Module):
         self.recognizer = build_recognizer(cfg, recognizer)
 
         # generate attention weights
-        self.name = "texthead_weights_in_feature"
-        self.__setattr__(self.name, nn.Parameter(
-            torch.ones(len(self.in_features), dtype=torch.float32),
-            requires_grad=True
-        ))
+        # self.name = "texthead_weights_in_feature"
+        # self.__setattr__(self.name, nn.Parameter(
+        #     torch.ones(len(self.in_features), dtype=torch.float32),
+        #     requires_grad=True
+        # ))
         self.weight_feature = nn.Parameter(
             torch.ones(len(self.in_features), dtype=torch.float32,
                        requires_grad=True)
@@ -197,21 +197,7 @@ class TextHead(nn.Module):
         del images
         features = [features[f] for f in self.in_features]
 
-        #generation weight
-        weights = F.relu(self.weight_feature)
-        norm_weights = weights / (weights.sum() + 0.0001)
-        # new_node = torch.stack(features, dim=-1)
-        # new_node = (norm_weights * new_node).sum(dim=-1)  #这里会变成一个节点！
-        # new_node = swish(new_node)
-        weights_features = []
-        for i, feature in enumerate(features):
-            norm_weight = norm_weights[i]
-            weithg_feature = feature * norm_weight
-            weithg_feature = swish(weithg_feature)
-            weights_features.append(weithg_feature)
-
-        features = weights_features
-
+        #generation weight 1
         # weights = F.relu(self.__getattr__(self.name))
         # norm_weights = weights / (weights.sum() + 0.0001)
         # # new_node = torch.stack(features, dim=-1)
@@ -225,6 +211,21 @@ class TextHead(nn.Module):
         #     weights_features.append(weithg_feature)
         #
         # features = weights_features
+
+        # generation weight 2
+        weights = F.relu(self.weight_feature)
+        norm_weights = weights / (weights.sum() + 0.0001)
+        # new_node = torch.stack(features, dim=-1)
+        # new_node = (norm_weights * new_node).sum(dim=-1)  #这里会变成一个节点！
+        # new_node = swish(new_node)
+        weights_features = []
+        for i, feature in enumerate(features):
+            norm_weight = norm_weights[i]
+            weithg_feature = feature * norm_weight
+            weithg_feature = swish(weithg_feature)
+            weights_features.append(weithg_feature)
+
+        features = weights_features
 
         if self.coordconv:
             mask_features = []
