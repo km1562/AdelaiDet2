@@ -8,7 +8,6 @@ from detectron2.modeling.backbone import Backbone, build_resnet_backbone
 from detectron2.modeling import BACKBONE_REGISTRY
 from .mobilenet import build_mnv2_backbone
 # from .resizer import Resizer
-from .fpa import FPA
 
 __all__ = []
 
@@ -253,6 +252,11 @@ class SingleBiFPN(Backbone):
                             # mode="bilinear"
                         )
                 else:
+                    with open("/home/wengkangming/map_file/AdelaiDet2/AdelaiDet/output/batext/ctw1500/bi_fpn_h_w.txt", "a+") as f:
+                        f.write("h is :" + str(h) + '\n')
+                        f.write("w is :" + str(w) + '\n')
+                        f.write("target_h is :" + str(target_h) + '\n')
+                        f.write("target_w is :" + str(target_w) + '\n')
                     raise NotImplementedError()
                 input_nodes.append(input_node)
 
@@ -277,12 +281,6 @@ class SingleBiFPN(Backbone):
                     output_feats.append(feats[-1 - i])
                     break
             else:
-                with open("/home/wengkangming/map_file/AdelaiDet2/AdelaiDet/output/batext/ctw1500/bi_fpn_h_w.txt",
-                          'a+') as f:
-                    f.write("h is : " + str(h) + '\n')
-                    f.write("w is : " + str(w) + '\n')
-                    f.write("target_h is : " + str(target_h) + '\n')
-                    f.write("target_w is : " + str(target_w) + '\n')
                 raise ValueError()
         return output_feats
 
@@ -404,13 +402,6 @@ def build_fcos_resnet_bifpn_backbone(cfg, input_shape: ShapeSpec):
         bottom_up = build_mnv2_backbone(cfg, input_shape)
     else:
         bottom_up = build_resnet_backbone(cfg, input_shape)
-    if cfg.MODEL.RESNETS.USE_FPA:
-        for i, stage in enumerate(bottom_up.stages):
-            if i == len(bottom_up.stages) - 1 or i == len(bottom_up.stages) - 2 or i == len(bottom_up.stages) - 3:
-                continue
-            in_channel = 256
-            bottom_up.stages[i].add_module('FPA_{0}'.format(i), FPA(in_channel * (2 ** i)))
-
     in_features = cfg.MODEL.BiFPN.IN_FEATURES
     out_channels = cfg.MODEL.BiFPN.OUT_CHANNELS
     num_repeats = cfg.MODEL.BiFPN.NUM_REPEATS

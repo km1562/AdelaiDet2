@@ -47,6 +47,8 @@ from adet.evaluation import TextEvaluator
 # import torch.distributed as dist
 # dist.init_process_group('gloo', init_method='file:///tmp/somefile', rank=0, world_size=1)
 
+
+
 class Trainer(DefaultTrainer):
     """
     This is the same Trainer except that we rewrite the
@@ -228,6 +230,13 @@ def main(args):
 
 
 if __name__ == "__main__":
+    cuda_num = os.environ['CUDA_VISIBLE_DEVICES']
+    cuda_num_list = list(cuda_num.split(","))
+    if len(cuda_num_list) == 1:
+        import torch.distributed as dist
+
+        dist.init_process_group(backend='nccl', init_method='tcp://localhost:23456', rank=0, world_size=1)
+        print("already init\n")
     args = default_argument_parser().parse_args()
     print("Command Line Args:", args)
     launch(
@@ -238,4 +247,3 @@ if __name__ == "__main__":
         dist_url=args.dist_url,
         args=(args,),
     )
-    #test
