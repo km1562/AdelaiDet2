@@ -73,6 +73,7 @@ def fcos_losses(
     class_target = torch.zeros_like(logits_pred)
     class_target[pos_inds, labels[pos_inds]] = 1
 
+    #类别损失
     class_loss = sigmoid_focal_loss_jit(
         logits_pred,
         class_target,
@@ -93,12 +94,14 @@ def fcos_losses(
     loss_denorm = max(reduce_sum(ctrness_targets_sum).item() / num_gpus, 1e-6)
 
     if pos_inds.numel() > 0:
+        #回归损失
         reg_loss = iou_loss(
             ious,
             gious,
             ctrness_targets
         ) / loss_denorm
-        
+
+        #中心度损失
         ctrness_loss = F.binary_cross_entropy_with_logits(
           ctrness_pred,
            ctrness_targets,
@@ -116,6 +119,7 @@ def fcos_losses(
         bezier_loss = bezier_pred.sum() * 0
         ctrness_loss = ctrness_pred.sum() * 0
 
+    #bezier损失
     bezier_loss = F.smooth_l1_loss(
         bezier_pred, bezier_targets, reduction="none")
     bezier_loss = ((bezier_loss.mean(dim=-1) * ctrness_targets).sum()
