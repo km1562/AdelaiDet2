@@ -283,9 +283,6 @@ class FCOSHead(nn.Module):
         assert len(set(in_channels)) == 1, "Each level must have the same channel!"
         in_channels = in_channels[0]
 
-        self.cbam = CBAM(inchannels=256)
-        self.cbam_cls_logits = CBAM(inchannels=1, ratio=1)
-
         for head in head_configs:
             tower = []
             num_convs, use_deformable = head_configs[head]
@@ -346,6 +343,9 @@ class FCOSHead(nn.Module):
         prior_prob = cfg.MODEL.FCOS.PRIOR_PROB
         bias_value = -math.log((1 - prior_prob) / prior_prob)
         torch.nn.init.constant_(self.cls_logits.bias, bias_value)
+
+        self.cbam = CBAM(inchannels=256)
+        self.cbam_cls_logits = CBAM(inchannels=1, ratio=1)
 
     def forward(self, x, top_module=None, yield_bbox_towers=False):
         logits = []
