@@ -179,8 +179,6 @@ class BAText(nn.Module):
         """
         features = [features[f] for f in self.in_features]
 
-        features = [features[f] for f in self.in_features]
-
         # generation weight 1
         # weights = F.relu(self.__getattr__(self.name))
         # norm_weights = weights / (weights.sum() + 0.0001)
