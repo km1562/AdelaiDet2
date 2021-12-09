@@ -63,7 +63,10 @@ def fcos_losses(
     num_classes = logits_pred.size(1)
     labels = labels.flatten()
 
+    #正样本索引3
     pos_inds = torch.nonzero(labels != num_classes).squeeze(1)
+
+    #归一化参数
     num_pos_local = pos_inds.numel()
     num_gpus = get_world_size()
     total_num_pos = reduce_sum(pos_inds.new_tensor([num_pos_local])).item()
@@ -115,6 +118,9 @@ def fcos_losses(
         reg_loss = reg_pred.sum() * 0
         bezier_loss = bezier_pred.sum() * 0
         ctrness_loss = ctrness_pred.sum() * 0
+
+
+    # new loss
 
     bezier_loss = F.smooth_l1_loss(
         bezier_pred, bezier_targets, reduction="none")
