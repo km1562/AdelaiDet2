@@ -242,6 +242,22 @@ class SingleBiFPN(Backbone):
                         input_node, kernel_size=(height_stride_size + 1, width_stride_size + 1),
                         stride=(height_stride_size, width_stride_size), padding=1
                     )
+                elif (h == 1 and target_h == 1) and w > target_w:
+                    height_stride_size = 1
+                    width_stride_size = int((w - 1) // target_w + 1)
+                    assert height_stride_size == 1, width_stride_size == 2
+                    input_node = F.max_pool2d(
+                        input_node, kernel_size=(height_stride_size + 2, width_stride_size + 1),
+                        stride=(height_stride_size, width_stride_size), padding=1
+                    )
+                    with open(
+                            "/home/wengkangming/map_file/AdelaiDet2/AdelaiDet/output/batext/ctw1500/bi_fpn_h_w.txt",
+                            "a+") as f:
+                        f.write("the problem is again\n")
+                        f.write("h is :" + str(h) + '\n')
+                        f.write("w is :" + str(w) + '\n')
+                        f.write("target_h is :" + str(target_h) + '\n')
+                        f.write("target_w is :" + str(target_w) + '\n')
                 elif h <= target_h and w <= target_w:
                     if h < target_h or w < target_w:
                         input_node = F.interpolate(
