@@ -9,7 +9,8 @@ from fvcore.nn import sigmoid_focal_loss_jit
 
 from adet.utils.comm import reduce_sum, compute_ious
 from adet.layers import ml_nms
-
+from pyxllib.algo.geo import ComputeIou
+from .compute_bezier_iou import compute_bezier_iou
 
 logger = logging.getLogger(__name__)
 
@@ -121,11 +122,13 @@ def fcos_losses(
 
 
     # new loss
+    beziers_iou = compute_bezier_iou(bezier_pred, bezier_targets)
+    bezier_loss = iou_loss(beziers_iou, gious=None, weight=ctrness_targets) / loss_denorm
 
-    bezier_loss = F.smooth_l1_loss(
-        bezier_pred, bezier_targets, reduction="none")
-    bezier_loss = ((bezier_loss.mean(dim=-1) * ctrness_targets).sum()
-                    / loss_denorm)
+    # bezier_loss = F.smooth_l1_loss(
+    #     bezier_pred, bezier_targets, reduction="none")
+    # bezier_loss = ((bezier_loss.mean(dim=-1) * ctrness_targets).sum()
+    #                 / loss_denorm)
 
     losses = {
         "loss_fcos_cls": class_loss,
