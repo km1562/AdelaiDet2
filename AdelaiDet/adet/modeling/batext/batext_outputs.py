@@ -9,7 +9,6 @@ from fvcore.nn import sigmoid_focal_loss_jit
 
 from adet.utils.comm import reduce_sum, compute_ious
 from adet.layers import ml_nms
-from pyxllib.algo.geo import ComputeIou
 from .compute_bezier_iou import compute_bezier_iou
 
 logger = logging.getLogger(__name__)
