@@ -25,7 +25,7 @@ def bezier_to_poly(bezier):
              + torch.outer(3 * (u ** 2) * (1 - u), bezier[:, 2]) \
              + torch.outer(u ** 3, bezier[:, 3])
     points = torch.cat((points[:, :2], points[:, 2:]), dim=0)
-    points = points.reshape(-1)
+    # points = points.reshape(-1)
     return points
 
 def compute_bezier_iou(bezier_pred, bezier_targets):
