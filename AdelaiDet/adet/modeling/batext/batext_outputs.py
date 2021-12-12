@@ -127,6 +127,7 @@ def fcos_losses(
     beziers_iou = compute_bezier_iou(bezier_pred, bezier_targets)
     bezier_loss = bezier_iou_loss(beziers_iou, gious=None, weight=ctrness_targets) / loss_denorm
 
+    print("bezier_loss's value", bezier_loss)
     # bezier_loss = F.smooth_l1_loss(
     #     bezier_pred, bezier_targets, reduction="none")
     # bezier_loss = ((bezier_loss.mean(dim=-1) * ctrness_targets).sum()
