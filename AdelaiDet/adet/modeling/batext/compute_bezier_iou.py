@@ -39,4 +39,4 @@ def compute_bezier_iou(bezier_pred, bezier_targets):
         bezier_iou = ComputeIou.polygon(pts1, pts2)
         beziers_iou.append(bezier_iou)
 
-    return beziers_iou
+    return torch.tensor(beziers_iou)
