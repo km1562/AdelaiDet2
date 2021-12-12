@@ -20,10 +20,10 @@ def compute_bezier_iou(bezier_pred, bezier_targets):
     beziers_iou = []
     bezier_nums = len(bezier_pred)
     for i in range(bezier_nums):
-        pts1 = bezier_to_poly(bezier_pred[i])
-        pts2 = bezier_to_poly(bezier_targets[i])
-        pts1 = Polygon(pts1)
-        pts2 = Polygon(pts1)
+        pts1 = bezier_to_poly(bezier_pred[i].cpu())
+        pts2 = bezier_to_poly(bezier_targets[i].cpu())
+        pts1 = Polygon(torch.from_numpy(pts1))
+        pts2 = Polygon(torch.from_numpy(pts2))
         bezier_iou = ComputeIou.polygon(pts1, pts2)
         beziers_iou.append(bezier_iou)
 
