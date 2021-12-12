@@ -18,13 +18,13 @@ import numpy as np
 
 def bezier_to_poly(bezier):
     # bezier to polygon
-    u = torch.linspace(0, 1, 20)
-    bezier = bezier.reshape(2, 4, 2).transpose(0, 2, 1).reshape(4, 4)
+    u = torch.linspace(0, 1, 20, device='cuda')
+    bezier = bezier.reshape(2, 4, 2).permute(0, 2, 1).reshape(4, 4)
     points = torch.outer((1 - u) ** 3, bezier[:, 0]) \
              + torch.outer(3 * u * ((1 - u) ** 2), bezier[:, 1]) \
              + torch.outer(3 * (u ** 2) * (1 - u), bezier[:, 2]) \
              + torch.outer(u ** 3, bezier[:, 3])
-    points = torch.cat((points[:, :2], points[:, 2:]), dim=None)
+    points = torch.cat((points[:, :2], points[:, 2:]), dim=0)
     points = points.reshape(-1)
     return points
 
