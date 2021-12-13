@@ -38,7 +38,7 @@ def compute_bezier_iou(bezier_pred, bezier_targets):
         pts2 = Polygon(pts2)
         bezier_iou = ComputeIou.polygon(pts1, pts2)
         if bezier_iou == 0:
-            beziers_iou = 0.05
+            bezier_iou = 0.05
         beziers_iou.append(bezier_iou)
 
     print("beziers_iou's value", beziers_iou)
