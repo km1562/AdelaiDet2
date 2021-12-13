@@ -125,7 +125,7 @@ def fcos_losses(
 
     # new loss
     beziers_iou = compute_bezier_iou(bezier_pred, bezier_targets)
-    bezier_loss = bezier_iou_loss(beziers_iou, gious=None, weight=ctrness_targets) / loss_denorm
+    bezier_ios_loss = bezier_iou_loss(beziers_iou, gious=None, weight=ctrness_targets) / loss_denorm
 
     print("bezier_loss's value\n", bezier_loss)
     print("——————————分割线————————")
@@ -134,11 +134,17 @@ def fcos_losses(
     # bezier_loss = ((bezier_loss.mean(dim=-1) * ctrness_targets).sum()
     #                 / loss_denorm)
 
+    bezier_loss_l1 = F.smooth_l1_loss(
+        bezier_pred, bezier_targets, reduction="none")
+    bezier_loss_l1 = ((bezier_loss_l1.mean(dim=-1) * ctrness_targets).sum()
+                    / loss_denorm)
+
     losses = {
         "loss_fcos_cls": class_loss,
         "loss_fcos_loc": reg_loss,
         "loss_fcos_ctr": ctrness_loss,
-        "loss_fcos_bezier": bezier_loss,
+        "loss_iou_bezier": bezier_ios_loss,
+        "loss_f1_bezier": bezier_loss_l1,
     }
     return losses
 

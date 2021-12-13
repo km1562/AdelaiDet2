@@ -34,8 +34,11 @@ def compute_bezier_iou(bezier_pred, bezier_targets):
     for i in range(bezier_nums):
         pts1 = bezier_to_poly(bezier_pred[i])
         pts2 = bezier_to_poly(bezier_targets[i])
-        pts1 = Polygon(pts1)
-        pts2 = Polygon(pts2)
+        try:
+            pts1 = Polygon(pts1)
+            pts2 = Polygon(pts2)
+        except:
+            continue
         bezier_iou = ComputeIou.polygon(pts1, pts2)
         if bezier_iou == 0:
             bezier_iou = 0.05
