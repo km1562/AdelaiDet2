@@ -41,5 +41,5 @@ def compute_bezier_iou(bezier_pred, bezier_targets):
             bezier_iou = 0.05
         beziers_iou.append(bezier_iou)
 
-    print("beziers_iou's value", beziers_iou)
+    print("beziers_iou's value\n", beziers_iou)
     return torch.tensor(beziers_iou, device='cuda')
