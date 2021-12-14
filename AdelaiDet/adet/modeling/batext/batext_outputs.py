@@ -124,8 +124,8 @@ def fcos_losses(
 
 
     # new loss
-    beziers_iou = compute_bezier_iou(bezier_pred, bezier_targets)
-    bezier_ios_loss = bezier_iou_loss(beziers_iou, gious=None, weight=ctrness_targets) / loss_denorm
+    beziers_iou, iou_weight = compute_bezier_iou(bezier_pred, bezier_targets, ctrness_targets)
+    bezier_iou_loss = bezier_iou_loss(beziers_iou, gious=None, weight=iou_weight) / loss_denorm
 
     # print("bezier_loss's value\n", bezier_ios_loss)
     # print("——————————分割线————————")

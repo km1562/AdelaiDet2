@@ -28,21 +28,24 @@ def bezier_to_poly(bezier):
     # points = points.reshape(-1)
     return points
 
-def compute_bezier_iou(bezier_pred, bezier_targets):
+def compute_bezier_iou(bezier_pred, bezier_targets, ctrness_targets):
     beziers_iou = []
     bezier_nums = len(bezier_pred)
+    iou_weight = ctrness_targets
     for i in range(bezier_nums):
         pts1 = bezier_to_poly(bezier_pred[i])
         pts2 = bezier_to_poly(bezier_targets[i])
         try:
             pts1 = Polygon(pts1)
             pts2 = Polygon(pts2)
+            bezier_iou = ComputeIou.polygon(pts1, pts2)
         except:
+            print('An invalid detection is removed ... ')
+            del iou_weight[i]
             continue
-        bezier_iou = ComputeIou.polygon(pts1, pts2)
         if bezier_iou == 0:
             bezier_iou = 0.05
         beziers_iou.append(bezier_iou)
 
     # print("beziers_iou's value\n", beziers_iou)
-    return torch.tensor(beziers_iou, device='cuda')
+    return torch.tensor(beziers_iou, device='cuda'), iou_weight
