@@ -199,7 +199,7 @@ class BATextOutputs(object):
         num_loc_list = [len(loc) for loc in self.locations]
         self.num_loc_list = num_loc_list
 
-        # compute locations to size ranges
+        # compute locations to size ranges #计算每个位置的限制
         loc_to_size_range = []
         for l, loc_per_level in enumerate(self.locations):
             loc_to_size_range_per_level = loc_per_level.new_tensor(self.sizes_of_interest[l])
@@ -281,20 +281,21 @@ class BATextOutputs(object):
 
             area = targets_per_im.gt_boxes.area()
 
+            #计算每个location相对应于每个gt的vector[l,t,r,b]->[location_num,bbox_num]
             l = xs[:, None] - bboxes[:, 0][None]
             t = ys[:, None] - bboxes[:, 1][None]
             r = bboxes[:, 2][None] - xs[:, None]
             b = bboxes[:, 3][None] - ys[:, None]
-            reg_targets_per_im = torch.stack([l, t, r, b], dim=2)
+            reg_targets_per_im = torch.stack([l, t, r, b], dim=2)  #[location_num,bbox_numm,4]
 
             # bezier points are relative distances from center to control points
             bezier_pts = targets_per_im.beziers.view(-1, 8, 2)
-            x_targets = bezier_pts[:, :, 0][None] - xs[:, None, None]
-            y_targets = bezier_pts[:, :, 1][None] - ys[:, None, None]
-            bezier_targets_per_im = torch.stack((x_targets, y_targets), dim=3)
-            bezier_targets_per_im = bezier_targets_per_im.view(xs.size(0), bboxes.size(0), 16)
+            x_targets = bezier_pts[:, :, 0][None] - xs[:, None, None]  #[location,bbox_numm,bezier,8]
+            y_targets = bezier_pts[:, :, 1][None] - ys[:, None, None]  #[location,bbox_numm,bezier,8]
+            bezier_targets_per_im = torch.stack((x_targets, y_targets), dim=3)  # [location,bbox_numm,bezier,8,2]
+            bezier_targets_per_im = bezier_targets_per_im.view(xs.size(0), bboxes.size(0), 16)  # [location,bbox_numm,bezier, 16]
 
-            if self.center_sample:
+            if self.center_sample:  #得到掩码区域
                 is_in_boxes = self.get_sample_region(
                     bboxes, self.strides, self.num_loc_list,
                     xs, ys, radius=self.radius
