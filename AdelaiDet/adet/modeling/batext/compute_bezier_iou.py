@@ -40,7 +40,6 @@ def compute_bezier_iou(bezier_pred, bezier_targets, ctrness_targets):
             pts2 = Polygon(pts2)
             bezier_iou = ComputeIou.polygon(pts1, pts2)
         except:
-            print('An invalid detection is removed ... ')
             continue
 
         if bezier_iou == 0:
