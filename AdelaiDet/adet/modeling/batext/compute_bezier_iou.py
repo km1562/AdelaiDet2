@@ -31,7 +31,7 @@ def bezier_to_poly(bezier):
 def compute_bezier_iou(bezier_pred, bezier_targets, ctrness_targets):
     beziers_iou = []
     bezier_nums = len(bezier_pred)
-    iou_weight = ctrness_targets
+    iou_weight = []
     for i in range(bezier_nums):
         pts1 = bezier_to_poly(bezier_pred[i])
         pts2 = bezier_to_poly(bezier_targets[i])
@@ -41,11 +41,13 @@ def compute_bezier_iou(bezier_pred, bezier_targets, ctrness_targets):
             bezier_iou = ComputeIou.polygon(pts1, pts2)
         except:
             print('An invalid detection is removed ... ')
-            del iou_weight[i]
             continue
+
         if bezier_iou == 0:
             bezier_iou = 0.05
+
         beziers_iou.append(bezier_iou)
+        iou_weight.append(ctrness_targets[i])
 
     # print("beziers_iou's value\n", beziers_iou)
-    return torch.tensor(beziers_iou, device='cuda'), iou_weight
+    return torch.tensor(beziers_iou, device='cuda'), torch.tensor(iou_weight, device='cuda')
