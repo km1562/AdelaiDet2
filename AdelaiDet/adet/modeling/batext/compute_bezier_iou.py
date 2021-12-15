@@ -57,6 +57,9 @@ def catetroy_bezier_to_different_loos(bezier_pred, bezier_targets, ctrness_targe
             smooth_l1_bezier_targets.append(bezier_targets[i])
             smooth_l1_ctrness_targets.append(ctrness_targets[i])
 
+    # if smooth_l1_bezier_pred and smooth_l1_bezier_targets and smooth_l1_ctrness_targets:
+    #     torch.tensor(smooth_l1_bezier_pred, device='cuda'), torch.tensor(smooth_l1_bezier_targets, device='cuda'), torch.tensor(smooth_l1_ctrness_targets, device='cuda')
+    #     smooth_l1_dict.appned()
     # print("beziers_iou's value\n", beziers_iou)
     return torch.tensor(beziers_iou, device='cuda'), torch.tensor(iou_weight, device='cuda'), \
            torch.tensor(smooth_l1_bezier_pred, device='cuda'), torch.tensor(smooth_l1_bezier_targets, device='cuda'), torch.tensor(smooth_l1_ctrness_targets, device='cuda')
