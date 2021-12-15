@@ -30,10 +30,14 @@ def bezier_to_poly(bezier):
     # points = points.reshape(-1)
     return points
 
-def compute_bezier_iou(bezier_pred, bezier_targets, ctrness_targets):
+def catetroy_bezier_to_different_loos(bezier_pred, bezier_targets, ctrness_targets):
     beziers_iou = []
     bezier_nums = len(bezier_pred)
     iou_weight = []
+
+    smooth_l1_bezier_pred = []
+    smooth_l1_bezier_targets = []
+    smooth_l1_ctrness_targets = []
     for i in range(bezier_nums):
         pts1 = bezier_to_poly(bezier_pred[i])
         pts2 = bezier_to_poly(bezier_targets[i])
@@ -49,7 +53,10 @@ def compute_bezier_iou(bezier_pred, bezier_targets, ctrness_targets):
             beziers_iou.append(bezier_iou)
             iou_weight.append(ctrness_targets[i])
         else:
-            continue
+            smooth_l1_bezier_pred.append(bezier_pred[i])
+            smooth_l1_bezier_targets.append(bezier_targets[i])
+            smooth_l1_ctrness_targets.append(ctrness_targets[i])
 
     # print("beziers_iou's value\n", beziers_iou)
-    return torch.tensor(beziers_iou, device='cuda'), torch.tensor(iou_weight, device='cuda')
+    return torch.tensor(beziers_iou, device='cuda'), torch.tensor(iou_weight, device='cuda'), \
+           torch.tensor(smooth_l1_bezier_pred, device='cuda'), torch.tensor(smooth_l1_bezier_targets, device='cuda'), torch.tensor(smooth_l1_ctrness_targets, device='cuda')
