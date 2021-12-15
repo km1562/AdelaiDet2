@@ -1,3 +1,5 @@
+import pprint
+
 import torch
 from shapely.geometry import Polygon
 from pyxllib.algo.geo import ComputeIou
@@ -35,18 +37,19 @@ def compute_bezier_iou(bezier_pred, bezier_targets, ctrness_targets):
     for i in range(bezier_nums):
         pts1 = bezier_to_poly(bezier_pred[i])
         pts2 = bezier_to_poly(bezier_targets[i])
-        try:
-            pts1 = Polygon(pts1)
-            pts2 = Polygon(pts2)
+        # pts1 = Polygon(pts1).convex_hull
+        # pts2 = Polygon(pts2).convex_hull
+        # bezier_iou = ComputeIou.polygon(pts1, pts2)
+        pts1 = Polygon(pts1)
+        pts2 = Polygon(pts2)
+        if pts1.is_valid and pts2.is_valid:
             bezier_iou = ComputeIou.polygon(pts1, pts2)
-        except:
+            if bezier_iou == 0:
+                bezier_iou = 0.05
+            beziers_iou.append(bezier_iou)
+            iou_weight.append(ctrness_targets[i])
+        else:
             continue
-
-        if bezier_iou == 0:
-            bezier_iou = 0.05
-
-        beziers_iou.append(bezier_iou)
-        iou_weight.append(ctrness_targets[i])
 
     # print("beziers_iou's value\n", beziers_iou)
     return torch.tensor(beziers_iou, device='cuda'), torch.tensor(iou_weight, device='cuda')
