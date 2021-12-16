@@ -201,18 +201,62 @@ def setup(args):
 
 def main(args):
     cfg = setup(args)
-
+    file_name = "xxx"
     if args.eval_only:
-        model = Trainer.build_model(cfg)
-        AdetCheckpointer(model, save_dir=cfg.OUTPUT_DIR).resume_or_load(
-            cfg.MODEL.WEIGHTS, resume=args.resume
-        )
-        res = Trainer.test(cfg, model) # d2 defaults.py
-        if comm.is_main_process():
-            verify_results(cfg, res)
-        if cfg.TEST.AUG.ENABLED:
-            res.update(Trainer.test_with_TTA(cfg, model))
+        with open(file_name, "r") as f:
+            for str_nms in f.readline():
+                list_nums = list(str_nms)
+                cfg.MODEL.FOSC.INFERENCE_TH_TEST = list_nums
+                model = Trainer.build_model(cfg)
+                AdetCheckpointer(model, save_dir=cfg.OUTPUT_DIR).resume_or_load(
+                    cfg.MODEL.WEIGHTS, resume=args.resume
+                )
+                res = Trainer.test(cfg, model) # d2 defaults.py
+                if comm.is_main_process():
+                    verify_results(cfg, res)
+                if cfg.TEST.AUG.ENABLED:
+                    res.update(Trainer.test_with_TTA(cfg, model))
+
+                os.chdir(cfg.OUTPUT_DIR)
+                best_detection_res = -1
+                best_detection_list = []
+                if best_detection_res < res["DETECTION_ONLY_RESULTS"]['hmean']:
+                    best_detection_res = res["DETECTION_ONLY_RESULTS"]['hmean']
+                    best_detection_list = list_nums
+
+                best_e2e_res = -1
+                best_e2e_list = []
+                if best_detection_res < res["E2E_RESULTS"]['hmean']:
+                    best_detection_res = res["E2E_RESULTS"]['hmean']
+                    best_detection_list = list_nums
+
+        with open(file_name + "./best_detection_res.txt", "a+") as f:
+            f.write(str(best_detection_res) + '\n')
+            f.write(str(best_detection_list) + '\n')
+            f.wirte("——————————————————————————")
+
+        with open(file_name + "./best_e2e_res.txt", "a+") as f:
+            f.write(str(best_detection_res) + '\n')
+            f.write(str(best_detection_list) + '\n')
+            f.wirte("——————————————————————————")
         return res
+
+    # if args.eval_only:
+    #     model = Trainer.build_model(cfg)
+    #     AdetCheckpointer(model, save_dir=cfg.OUTPUT_DIR).resume_or_load(
+    #         cfg.MODEL.WEIGHTS, resume=args.resume
+    #     )
+    #     res = Trainer.test(cfg, model) # d2 defaults.py
+    #     if comm.is_main_process():
+    #         verify_results(cfg, res)
+    #     if cfg.TEST.AUG.ENABLED:
+    #         res.update(Trainer.test_with_TTA(cfg, model))
+    #
+    #     os.chdir(cfg.OUTPUT_DIR)
+    #     print("write the best result into best_res.txt")
+    #     with open("./best.txt", "a+") as f:
+    #         f.write(str(res) + '\n')
+    #     return res
 
     """
     If you'd like to do anything fancier than the standard training logic,
@@ -225,6 +269,7 @@ def main(args):
             [hooks.EvalHook(0, lambda: trainer.test_with_TTA(cfg, trainer.model))]
         )
     return trainer.train()
+
 
 
 if __name__ == "__main__":
