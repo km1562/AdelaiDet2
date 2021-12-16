@@ -218,8 +218,8 @@ class TextEvaluator(DatasetEvaluator):
             return copy.deepcopy(self._results)
         # eval text
         temp_dir = "temp_det_results/"
-        self.to_eval_format(file_path, temp_dir, self._text_eval_confidence)
-        # self.to_eval_format(file_path, temp_dir, )
+        # self.to_eval_format(file_path, temp_dir, self._text_eval_confidence)
+        self.to_eval_format(file_path, temp_dir, )
         result_path = self.sort_detection(temp_dir)
         text_result = self.evaluate_with_official_code(result_path, self._text_eval_gt_path)
         os.remove(result_path)

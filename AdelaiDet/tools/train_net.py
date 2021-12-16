@@ -277,7 +277,6 @@ if __name__ == "__main__":
     cuda_num_list = list(cuda_num.split(","))
     if len(cuda_num_list) == 1:
         import torch.distributed as dist
-
         dist.init_process_group(backend='nccl', init_method='tcp://localhost:23456', rank=0, world_size=1)
         print("already init\n")
     args = default_argument_parser().parse_args()
