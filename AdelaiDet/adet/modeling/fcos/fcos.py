@@ -16,6 +16,53 @@ __all__ = ["FCOS"]
 
 INF = 100000000
 
+def swish(x):
+    return x * x.sigmoid()
+
+class Channel_Attention(nn.Module):
+    def __init__(self, inchannels=256, ratio=16):
+        super(Channel_Attention, self).__init__()
+        self.avg_pool = nn.AdaptiveAvgPool2d(1)
+        self.max_pool = nn.AdaptiveMaxPool2d(1)
+
+        self.fc = nn.Sequential(
+            nn.Conv2d(inchannels, inchannels // ratio, 1, bias=False),
+            nn.ReLU(),
+            nn.Conv2d(inchannels // ratio, inchannels, 1, bias=False)
+        )
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, x):
+        avg_out = self.fc(self.avg_pool(x))  #(B, C, 1, 1)
+        max_out = self.fc(self.max_pool(x))  #(B, C, 1, 1)
+        out = avg_out + max_out  #(B, C, 1, 1)
+        return self.sigmoid(out) #(B, C, 1, 1)
+
+class Spatial_Channel(nn.Module):
+    def __init__(self, kernel_size=7):
+        super(Spatial_Channel, self).__init__()
+        self.conv1 = nn.Conv2d(2, 1, kernel_size, padding=kernel_size // 2,bias=False)
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, x):
+        max_out = torch.max(x, dim=1, keepdim=True).values
+        avg_out = torch.mean(x, dim=1, keepdim=True)
+        x = torch.cat([max_out, avg_out], dim=1)
+        x = self.conv1(x) # (B, 1, H, W)
+        return self.sigmoid(x) #(B, 1, H, W)
+
+class CBAM(nn.Module):
+    def __init__(self, inchannels=256, ratio=16):
+        super(CBAM, self).__init__()
+        self.channel_attention = Channel_Attention(inchannels, ratio)
+        self.spatial_channel = Spatial_Channel()
+
+    def forward(self, x):
+        channel_x = self.channel_attention(x)  #(B, C, 1, 1)
+        x = torch.multiply(x, channel_x) #(B, C, H, W)
+        spatial_x = self.spatial_channel(x) #(B, 1, H, W)
+        x = torch.multiply(x, spatial_x) #(B, C, H, W)
+        return x
 
 class Scale(nn.Module):
     def __init__(self, init_value=1.0):
@@ -56,6 +103,11 @@ class FCOS(nn.Module):
 
         self.fcos_outputs = FCOSOutputs(cfg)
 
+        self.weight_feature = nn.Parameter(
+            torch.ones(len(self.in_features), dtype=torch.float32,
+                       requires_grad=True)
+        )
+
     def forward_head(self, features, top_module=None):
         features = [features[f] for f in self.in_features]
         pred_class_logits, pred_deltas, pred_centerness, top_feats, bbox_towers = self.fcos_head(
@@ -76,6 +128,34 @@ class FCOS(nn.Module):
 
         """
         features = [features[f] for f in self.in_features]
+
+        # generation weight 1
+        # weights = F.relu(self.__getattr__(self.name))
+        # norm_weights = weights / (weights.sum() + 0.0001)
+        # weights_features = []
+        # for i, feature in enumerate(features):
+        #     norm_weight = norm_weights[i]
+        #     weithg_feature = feature * norm_weight
+        #     weithg_feature = swish(weithg_feature)
+        #     weights_features.append(weithg_feature)
+        #
+        # features = weights_features
+
+        # generation weight 2
+        weights = F.relu(self.weight_feature)
+        norm_weights = weights / (weights.sum() + 0.0001)
+        # new_node = torch.stack(features, dim=-1)
+        # new_node = (norm_weights * new_node).sum(dim=-1)  #这里会变成一个节点！
+        # new_node = swish(new_node)
+        weights_features = []
+        for i, feature in enumerate(features):
+            norm_weight = norm_weights[i]
+            weithg_feature = feature * norm_weight
+            weithg_feature = swish(weithg_feature)
+            weights_features.append(weithg_feature)
+
+        features = weights_features
+
         locations = self.compute_locations(features)
         logits_pred, reg_pred, ctrness_pred, top_feats, bbox_towers = self.fcos_head(
             features, top_module, self.yield_proposal or self.yield_box_feats
@@ -210,6 +290,9 @@ class FCOSHead(nn.Module):
         bias_value = -math.log((1 - prior_prob) / prior_prob)
         torch.nn.init.constant_(self.cls_logits.bias, bias_value)
 
+        self.cbam = CBAM(inchannels=256)
+        self.cbam_cls_logits = CBAM(inchannels=1, ratio=1)
+
     def forward(self, x, top_module=None, yield_bbox_towers=False):
         logits = []
         bbox_reg = []
@@ -218,12 +301,14 @@ class FCOSHead(nn.Module):
         bbox_towers = []
         for l, feature in enumerate(x):
             feature = self.share_tower(feature)
-            cls_tower = self.cls_tower(feature)
+            # cls_tower = self.cls_tower(feature)
+            cls_tower = self.cbam(self.cls_tower(feature))
             bbox_tower = self.bbox_tower(feature)
             if yield_bbox_towers:
                 bbox_towers.append(bbox_tower)
 
-            logits.append(self.cls_logits(cls_tower))
+            # logits.append(self.cls_logits(cls_tower))
+            logits.append(self.cbam_cls_logits(self.cls_logits(cls_tower)))
             ctrness.append(self.ctrness(bbox_tower))
             reg = self.bbox_pred(bbox_tower)
             if self.scales is not None:
