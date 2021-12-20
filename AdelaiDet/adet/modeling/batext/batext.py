@@ -114,7 +114,7 @@ class BAText(nn.Module):
         #     torch.ones(len(self.in_features), dtype=torch.float32),
         #     requires_grad=True
         # ))
-        print("used weight for feature")
+
         self.weight_feature = nn.Parameter(
             torch.ones(len(self.in_features),dtype = torch.float32,
                        requires_grad=True)
@@ -154,7 +154,7 @@ class BAText(nn.Module):
         #     weights_features.append(weithg_feature)
         #
         # features = weights_features
-
+        print("used weight for feature")
         # generation weight 2
         weights = F.relu(self.weight_feature)
         norm_weights = weights / (weights.sum() + 0.0001)
