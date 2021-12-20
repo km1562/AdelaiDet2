@@ -25,4 +25,4 @@ SOLVER:
   CHECKPOINT_PERIOD: 1000
 TEST:
   EVAL_PERIOD: 1000
-OUTPUT_DIR: "output/batext/total_text/0.4_nms+CBAM_attention_v2_attn_R_50"
+OUTPUT_DIR: "output/batext/total_text/0.4pre_nms+4bh+1w+CBAM_attention_v2_attn_R_50"
