@@ -17,12 +17,12 @@ MODEL:
     USE_AET: True
   FCOS:
     # Best e2e: 0.5; Best det: 0.4
-    INFERENCE_TH_TEST: 0.5
+    INFERENCE_TH_TEST: 0.4
 SOLVER:
-  IMS_PER_BATCH: 8
+  IMS_PER_BATCH: 4
   BASE_LR: 0.001
-  MAX_ITER: 5000
+  MAX_ITER: 10000
   CHECKPOINT_PERIOD: 1000
 TEST:
   EVAL_PERIOD: 1000
-OUTPUT_DIR: "output/batext/total_text/v2_attn_R_50"
+OUTPUT_DIR: "output/batext/total_text/0.4_nms+CBAM_attention_v2_attn_R_50"
