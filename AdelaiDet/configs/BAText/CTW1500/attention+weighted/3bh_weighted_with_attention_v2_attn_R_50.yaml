@@ -1,4 +1,4 @@
-_BASE_: "Base-CTW1500.yaml"
+_BASE_: "../Base-CTW1500.yaml"
 MODEL:
   WEIGHTS: "model_v2_pretrain.pth"
   BACKBONE:
