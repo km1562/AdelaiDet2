@@ -114,7 +114,7 @@ class BAText(nn.Module):
         #     torch.ones(len(self.in_features), dtype=torch.float32),
         #     requires_grad=True
         # ))
-
+        print("used weight for feature")
         self.weight_feature = nn.Parameter(
             torch.ones(len(self.in_features),dtype = torch.float32,
                        requires_grad=True)
@@ -292,6 +292,7 @@ class FCOSHead(nn.Module):
                 if norm == "GN":
                     tower.append(nn.GroupNorm(32, in_channels))
                 tower.append(nn.ReLU())
+
             self.add_module('{}_tower'.format(head),
                             nn.Sequential(*tower))
 
