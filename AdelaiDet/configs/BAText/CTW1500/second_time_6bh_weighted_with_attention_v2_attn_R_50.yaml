@@ -19,11 +19,11 @@ MODEL:
     # Best e2e: 0.5; Best det: 0.3
     INFERENCE_TH_TEST: 0.5
 SOLVER:
-  IMS_PER_BATCH: 4
+  IMS_PER_BATCH: 6
   BASE_LR: 0.001
-  STEPS: (200000, )
-  MAX_ITER: 260000
+  STEPS: (135000, )
+  MAX_ITER: 175000
   CHECKPOINT_PERIOD: 5000
 TEST:
   EVAL_PERIOD: 5000
-OUTPUT_DIR: "output/batext/ctw1500/second_time_4bh_weighte_with_attention_v2_attn_R_50"
+OUTPUT_DIR: "output/batext/ctw1500/second_time_6bh_weighte_with_attention_v2_attn_R_50"
