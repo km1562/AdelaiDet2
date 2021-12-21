@@ -283,9 +283,6 @@ class FCOSHead(nn.Module):
         assert len(set(in_channels)) == 1, "Each level must have the same channel!"
         in_channels = in_channels[0]
 
-        self.cbam = CBAM(inchannels=256)
-        self.cbam_cls_logits = CBAM(inchannels=1, ratio=1)
-
         for head in head_configs:
             tower = []
             num_convs, use_deformable = head_configs[head]
@@ -347,6 +344,11 @@ class FCOSHead(nn.Module):
         bias_value = -math.log((1 - prior_prob) / prior_prob)
         torch.nn.init.constant_(self.cls_logits.bias, bias_value)
 
+        self.cbam = CBAM(inchannels=256)
+        self.cbam_cls_logits = CBAM(inchannels=1, ratio=1)
+
+        self.top_feat_cbam = CBAM(inchannels=256)
+
     def forward(self, x, top_module=None, yield_bbox_towers=False):
         logits = []
         bbox_reg = []
@@ -368,5 +370,5 @@ class FCOSHead(nn.Module):
             # Note that we use relu, as in the improved FCOS, instead of exp.
             bbox_reg.append(F.relu(reg))
             if top_module is not None:
-                top_feats.append(top_module(bbox_tower))
+                top_feats.append(self.top_feat_cbam(top_module(bbox_tower)))
         return logits, bbox_reg, ctrness, top_feats, bbox_towers
