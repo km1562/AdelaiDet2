@@ -313,6 +313,7 @@ class FCOSHead(nn.Module):
         assert len(set(in_channels)) == 1, "Each level must have the same channel!"
         in_channels = in_channels[0]
 
+
         for head in head_configs:
             tower = []
             num_convs, use_deformable = head_configs[head]
