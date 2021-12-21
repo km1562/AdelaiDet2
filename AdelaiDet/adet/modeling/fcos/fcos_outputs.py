@@ -331,7 +331,7 @@ class FCOSOutputs(nn.Module):
         num_classes = instances.logits_pred.size(1)
         assert num_classes == self.num_classes
 
-        labels = instances.ori_annotation_file_list.flatten()
+        labels = instances.labels.flatten()
 
         pos_inds = torch.nonzero(labels != num_classes).squeeze(1)
 
