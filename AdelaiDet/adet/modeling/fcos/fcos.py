@@ -291,7 +291,7 @@ class FCOSHead(nn.Module):
         torch.nn.init.constant_(self.cls_logits.bias, bias_value)
 
         self.cbam = CBAM(inchannels=256)
-        self.cbam_cls_logits = CBAM(inchannels=1, ratio=1)
+        self.cbam_cls_logits = CBAM(inchannels=80, ratio=1)
 
     def forward(self, x, top_module=None, yield_bbox_towers=False):
         logits = []
