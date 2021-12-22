@@ -17,6 +17,7 @@ __all__ = ["FCOS"]
 INF = 100000000
 
 
+
 class Scale(nn.Module):
     def __init__(self, init_value=1.0):
         super(Scale, self).__init__()
