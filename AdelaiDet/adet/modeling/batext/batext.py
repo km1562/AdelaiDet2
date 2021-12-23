@@ -284,7 +284,7 @@ class FCOSHead(nn.Module):
         in_channels = in_channels[0]
 
         self.cbam = CBAM(inchannels=256)
-        self.cbam_cls_logits = CBAM(inchannels=1, ratio=1)
+        self.cbam_top_feat = CBAM(inchannels=16)
 
         for head in head_configs:
             tower = []
@@ -355,12 +355,12 @@ class FCOSHead(nn.Module):
         bbox_towers = []
         for l, feature in enumerate(x):
             feature = self.share_tower(feature)
-            cls_tower = self.cbam(self.cls_tower(feature))
-            bbox_tower = self.bbox_tower(feature)
+            cls_tower = self.cls_tower(feature)
+            bbox_tower = self.cbam(self.bbox_tower(feature))
             if yield_bbox_towers:
                 bbox_towers.append(bbox_tower)
 
-            logits.append(self.cbam_cls_logits(self.cls_logits(cls_tower)))  #(B, 1, H, W)
+            logits.append((self.cls_logits(cls_tower)))  #(B, 1, H, W)
             ctrness.append(self.ctrness(bbox_tower))
             reg = self.bbox_pred(bbox_tower)
             if self.scales is not None:
@@ -368,5 +368,5 @@ class FCOSHead(nn.Module):
             # Note that we use relu, as in the improved FCOS, instead of exp.
             bbox_reg.append(F.relu(reg))
             if top_module is not None:
-                top_feats.append(top_module(bbox_tower))
+                top_feats.append(self.cbam_top_feat(top_module(bbox_tower)))
         return logits, bbox_reg, ctrness, top_feats, bbox_towers
