@@ -31,7 +31,7 @@ class ASPP(nn.Module):
     def forward(self, x):
         size = x.shape[2:]
 
-        # 池化分支--个人感觉没什么用，改成注意力机制吧
+        # 池化分支--也不是没什么用，这个分支的作用在哪里呢？为什么不直接保留原图信息呢。。。确实，持保留意见。。。但他确实有1*1的分支，所以这里就是进一步的加强信息了。
         image_features = self.mean(x)
         image_features = self.conv(image_features)
         image_features = F.interpolate(image_features, size=size, mode='bilinear')
