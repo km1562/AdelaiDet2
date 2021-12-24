@@ -357,12 +357,16 @@ class FCOSHead(nn.Module):
         bbox_towers = []
         for l, feature in enumerate(x):
             feature = self.share_tower(feature)
-            cls_tower = self.cls_tower(feature)
-            bbox_tower = self.cbam(self.bbox_tower(feature))
+            cls_tower = self.cls_tower(feature)  #加强一下注意力
+            cls_tower = self.cbam_cls_tower(cls_tower)
+
+            bbox_tower = self.bbox_tower(feature) #加强一下注意力
+            bbox_tower = self.cbam_bbox_tower(bbox_tower)
+
             if yield_bbox_towers:
                 bbox_towers.append(bbox_tower)
 
-            logits.append((self.cls_lits(cls_tower)))  #(B, 1, H, W)
+            logits.append((self.cbam_cls(cls_tower)))  #(B, 1, H, W)
             ctrness.append(self.ctrness(bbox_tower))
             reg = self.bbox_pred(bbox_tower)
             if self.scales is not None:
