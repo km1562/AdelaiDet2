@@ -283,9 +283,10 @@ class FCOSHead(nn.Module):
         assert len(set(in_channels)) == 1, "Each level must have the same channel!"
         in_channels = in_channels[0]
 
-        self.cbam = CBAM(inchannels=256)
+        self.cbam_bbox_tower = CBAM(inchannels=256)
+        self.cbam_cls_tower = CBAM(inchannels=256)
         self.cbam_top_feat = CBAM(inchannels=16)
-        self.cbam_cls = CBAM(in_channels=256,)
+        self.cbam_cls = CBAM(in_channels=1, ratio=1)
 
         for head in head_configs:
             tower = []
