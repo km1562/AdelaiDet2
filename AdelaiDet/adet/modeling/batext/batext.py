@@ -285,6 +285,7 @@ class FCOSHead(nn.Module):
 
         self.cbam = CBAM(inchannels=256)
         self.cbam_top_feat = CBAM(inchannels=16)
+        self.cbam_cls = CBAM(in_channels=256,)
 
         for head in head_configs:
             tower = []
@@ -360,7 +361,7 @@ class FCOSHead(nn.Module):
             if yield_bbox_towers:
                 bbox_towers.append(bbox_tower)
 
-            logits.append((self.cls_logits(cls_tower)))  #(B, 1, H, W)
+            logits.append((self.cls_lits(cls_tower)))  #(B, 1, H, W)
             ctrness.append(self.ctrness(bbox_tower))
             reg = self.bbox_pred(bbox_tower)
             if self.scales is not None:
