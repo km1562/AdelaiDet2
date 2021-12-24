@@ -19,9 +19,18 @@ class ASPP(nn.Module):
         self.atrous_block6 = nn.Conv2d(in_channel, depth, 3, 1, padding=6, dilation=6)
         self.atrous_block12 = nn.Conv2d(in_channel, depth, 3, 1, padding=12, dilation=12)
         self.atrous_block18 = nn.Conv2d(in_channel, depth, 3, 1, padding=18, dilation=18)
-        self.conv_1x1_output = nn.Conv2d(depth * 5, depth, 1, 1)
+        self.conv_1x1_output = nn.Conv2d(depth * 5 + 2, depth, 1, 1)
 
     def forward(self, x):
+        ins_feat = x # 当前实例特征tensor
+        # 生成从-1到1的线性值
+        x_range = torch.linspace(-1, 1, ins_feat.shape[-1], device=ins_feat.device)
+        y_range = torch.linspace(-1, 1, ins_feat.shape[-2], device=ins_feat.device)
+        y, x = torch.meshgrid(y_range, x_range)  # 生成二维坐标网格
+        y = y.expand([ins_feat.shape[0], 1, -1, -1])  # 扩充到和ins_feat相同维度
+        x = x.expand([ins_feat.shape[0], 1, -1, -1])
+        coord_feat = torch.cat([x, y], 1)  # 位置特征
+
         size = x.shape[2:]
 
         # 池化分支
@@ -36,7 +45,7 @@ class ASPP(nn.Module):
         atrous_block18 = self.atrous_block18(x)
 
         # 汇合所有尺度的特征
-        x = torch.cat([image_features, atrous_block1, atrous_block6, atrous_block12, atrous_block18], dim=1)
+        x = torch.cat([image_features, atrous_block1, atrous_block6, atrous_block12, atrous_block18, coord_feat], dim=1)
 
         # 利用1X1卷积融合特征输出
         x = self.conv_1x1_output(x)
