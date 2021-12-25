@@ -87,7 +87,7 @@ def build_top_module(cfg):
     if top_type == "conv":
         inp = cfg.MODEL.FPN.OUT_CHANNELS
         oup = cfg.MODEL.TOP_MODULE.DIM
-        top_moduel = ASPP(
+        top_module = ASPP(
             inp, oup
         )
         # top_module = nn.Conv2d(
