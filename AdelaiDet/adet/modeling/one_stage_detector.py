@@ -1,6 +1,6 @@
 import logging
 from torch import nn
-
+import torch.nn.functional as F
 from detectron2.modeling.meta_arch.build import META_ARCH_REGISTRY
 from detectron2.modeling import ProposalNetwork, GeneralizedRCNN
 from detectron2.utils.events import get_event_storage
