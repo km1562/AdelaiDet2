@@ -55,7 +55,7 @@ def fcos_losses(
         logits_pred,
         reg_pred,
         bezier_pred,
-        ctrness_pred,
+        # ctrness_pred,
         focal_loss_alpha,
         focal_loss_gamma,
         iou_loss,
@@ -85,7 +85,7 @@ def fcos_losses(
     bezier_pred = bezier_pred[pos_inds]
     reg_targets = reg_targets[pos_inds]
     bezier_targets = bezier_targets[pos_inds]
-    ctrness_pred = ctrness_pred[pos_inds]
+    # ctrness_pred = ctrness_pred[pos_inds]
     
     ious, gious = compute_ious(reg_pred, reg_targets)
     ctrness_targets = compute_ctrness_targets(reg_targets)
@@ -99,11 +99,11 @@ def fcos_losses(
             ctrness_targets
         ) / loss_denorm
         
-        ctrness_loss = F.binary_cross_entropy_with_logits(
-          ctrness_pred,
-           ctrness_targets,
-           reduction="sum"
-        ) / num_pos_avg
+        # ctrness_loss = F.binary_cross_entropy_with_logits(
+        #   ctrness_pred,
+        #    ctrness_targets,
+        #    reduction="sum"
+        # ) / num_pos_avg
         # ctrness_loss = sigmoid_focal_loss_jit(
         #   ctrness_pred,
         #   ctrness_targets,
@@ -114,7 +114,7 @@ def fcos_losses(
     else:
         reg_loss = reg_pred.sum() * 0
         bezier_loss = bezier_pred.sum() * 0
-        ctrness_loss = ctrness_pred.sum() * 0
+        # ctrness_loss = ctrness_pred.sum() * 0
 
     bezier_loss = F.smooth_l1_loss(
         bezier_pred, bezier_targets, reduction="none")
@@ -124,7 +124,7 @@ def fcos_losses(
     losses = {
         "loss_fcos_cls": class_loss,
         "loss_fcos_loc": reg_loss,
-        "loss_fcos_ctr": ctrness_loss,
+        # "loss_fcos_ctr": ctrness_loss,
         "loss_fcos_bezier": bezier_loss,
     }
     return losses
@@ -137,7 +137,7 @@ class BATextOutputs(object):
             locations,
             logits_pred,
             reg_pred,
-            ctrness_pred,
+            # ctrness_pred,
             bezier_pred,
             focal_loss_alpha,
             focal_loss_gamma,
@@ -157,7 +157,7 @@ class BATextOutputs(object):
         self.logits_pred = logits_pred
         self.reg_pred = reg_pred
         self.bezier_pred = bezier_pred
-        self.ctrness_pred = ctrness_pred
+        # self.ctrness_pred = ctrness_pred
         self.locations = locations
 
         self.gt_instances = gt_instances
@@ -369,11 +369,11 @@ class BATextOutputs(object):
                 x.permute(0, 2, 3, 1).reshape(-1, 16)
                 for x in self.bezier_pred
             ], dim=0,)
-        ctrness_pred = cat(
-            [
-                # Reshape: (N, 1, Hi, Wi) -> (N*Hi*Wi,)
-                x.reshape(-1) for x in self.ctrness_pred
-            ], dim=0,)
+        # ctrness_pred = cat(
+        #     [
+        #         # Reshape: (N, 1, Hi, Wi) -> (N*Hi*Wi,)
+        #         x.reshape(-1) for x in self.ctrness_pred
+        #     ], dim=0,)
 
         labels = cat(
             [
@@ -400,7 +400,7 @@ class BATextOutputs(object):
             logits_pred,
             reg_pred,
             bezier_pred,
-            ctrness_pred,
+            # ctrness_pred,
             self.focal_loss_alpha,
             self.focal_loss_gamma,
             self.iou_loss,
