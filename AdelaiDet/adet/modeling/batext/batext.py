@@ -15,8 +15,8 @@ __all__ = ["BAText"]
 
 INF = 100000000
 
-
-
+def swish(x):
+    return x * x.sigmoid()
 
 class Scale(nn.Module):
     def __init__(self, init_value=1.0):
@@ -71,51 +71,6 @@ class Scale(nn.Module):
 #         print("prob's value", prob)
 #         return prob
 
-class Channel_Attention(nn.Module):
-    def __init__(self, inchannels=256, ratio=16):
-        super(Channel_Attention, self).__init__()
-        self.avg_pool = nn.AdaptiveAvgPool2d(1)
-        self.max_pool = nn.AdaptiveMaxPool2d(1)
-
-        self.fc = nn.Sequential(
-            nn.Conv2d(inchannels, inchannels // ratio, 1, bias=False),
-            nn.ReLU(),
-            nn.Conv2d(inchannels // ratio, inchannels, 1, bias=False)
-        )
-        self.sigmoid = nn.Sigmoid()
-
-    def forward(self, x):
-        avg_out = self.fc(self.avg_pool(x))  #(B, C, 1, 1)
-        max_out = self.fc(self.max_pool(x))  #(B, C, 1, 1)
-        out = avg_out + max_out  #(B, C, 1, 1)
-        return self.sigmoid(out) #(B, C, 1, 1)
-
-class Spatial_Channel(nn.Module):
-    def __init__(self, kernel_size=7):
-        super(Spatial_Channel, self).__init__()
-        self.conv1 = nn.Conv2d(2, 1, kernel_size, padding=kernel_size // 2,bias=False)
-        self.sigmoid = nn.Sigmoid()
-
-    def forward(self, x):
-        max_out = torch.max(x, dim=1, keepdim=True).values
-        avg_out = torch.mean(x, dim=1, keepdim=True)
-        x = torch.cat([max_out, avg_out], dim=1)
-        x = self.conv1(x) # (B, 1, H, W)
-        return self.sigmoid(x) #(B, 1, H, W)
-
-class CBAM(nn.Module):
-    def __init__(self, inchannels=256, ratio=16):
-        super(CBAM, self).__init__()
-        self.channel_attention = Channel_Attention(inchannels, ratio)
-        self.spatial_channel = Spatial_Channel()
-
-    def forward(self, x):
-        channel_x = self.channel_attention(x)  #(B, C, 1, 1)
-        x = torch.multiply(x, channel_x) #(B, C, H, W)
-        spatial_x = self.spatial_channel(x) #(B, 1, H, W)
-        x = torch.multiply(x, spatial_x) #(B, C, H, W)
-        return x
-
 @PROPOSAL_GENERATOR_REGISTRY.register()
 class BAText(nn.Module):
     """
@@ -153,7 +108,17 @@ class BAText(nn.Module):
         self.fcos_head = FCOSHead(cfg, [input_shape[f] for f in self.in_features])
         # self.predict_pre_nms_thresh = Predict_pre_nms_thresh(cfg)
 
+        # generate attention weights
+        # self.name = "batext_weights_in_feature"
+        # self.__setattr__(self.name, nn.Parameter(
+        #     torch.ones(len(self.in_features), dtype=torch.float32),
+        #     requires_grad=True
+        # ))
 
+        self.weight_feature = nn.Parameter(
+            torch.ones(len(self.in_features), dtype=torch.float32,
+                       requires_grad=True)
+        )
 
     def forward_head(self, features, top_module=None):
         features = [features[f] for f in self.in_features]
@@ -176,7 +141,32 @@ class BAText(nn.Module):
         """
         features = [features[f] for f in self.in_features]
 
-        #TODO,这里就进行multi_fuse,+卷积softmax对他进行一个阈值的输出，并且融合的feature_fuse要传出去
+        # generation weight 1
+        # weights = F.relu(self.__getattr__(self.name))
+        # norm_weights = weights / (weights.sum() + 0.0001)
+        # weights_features = []
+        # for i, feature in enumerate(features):
+        #     norm_weight = norm_weights[i]
+        #     weithg_feature = feature * norm_weight
+        #     weithg_feature = swish(weithg_feature)
+        #     weights_features.append(weithg_feature)
+        #
+        # features = weights_features
+        #print("used weight for feature")
+        # generation weight 2
+        weights = F.relu(self.weight_feature)
+        norm_weights = weights / (weights.sum() + 0.0001)
+        # new_node = torch.stack(features, dim=-1)
+        # new_node = (norm_weights * new_node).sum(dim=-1)  #这里会变成一个节点！
+        # new_node = swish(new_node)
+        weights_features = []
+        for i, feature in enumerate(features):
+            norm_weight = norm_weights[i]
+            weithg_feature = feature * norm_weight
+            weithg_feature = swish(weithg_feature)
+            weights_features.append(weithg_feature)
+
+        features = weights_features
 
         locations = self.compute_locations(features)
         logits_pred, reg_pred, ctrness_pred, top_feats, bbox_towers = self.fcos_head(
@@ -268,8 +258,6 @@ class FCOSHead(nn.Module):
             in_channels (int): number of channels of the input feature
         """
         super().__init__()
-
-
         # TODO: Implement the sigmoid version first.
         self.num_classes = cfg.MODEL.FCOS.NUM_CLASSES
         self.fpn_strides = cfg.MODEL.FCOS.FPN_STRIDES
@@ -285,9 +273,6 @@ class FCOSHead(nn.Module):
         assert len(set(in_channels)) == 1, "Each level must have the same channel!"
         in_channels = in_channels[0]
 
-        # self.cbam = CBAM(inchannels=256)
-        # self.cbam_cls_logits = CBAM(inchannels=1, ratio=1)
-
         for head in head_configs:
             tower = []
             num_convs, use_deformable = head_configs[head]
@@ -296,7 +281,6 @@ class FCOSHead(nn.Module):
             else:
                 conv_func = nn.Conv2d
             for i in range(num_convs):
-                # if head != "bbox":
                 tower.append(conv_func(
                     in_channels, in_channels,
                     kernel_size=3, stride=1,
@@ -305,13 +289,6 @@ class FCOSHead(nn.Module):
                 if norm == "GN":
                     tower.append(nn.GroupNorm(32, in_channels))
                 tower.append(nn.ReLU())
-                # else:
-                #     tower.append(
-                #         CBAM(in_channels)
-                #     )
-                #     if norm == "GN":
-                #         tower.append(nn.GroupNorm(32, in_channels))
-                #     tower.append(nn.ReLU())
             self.add_module('{}_tower'.format(head),
                             nn.Sequential(*tower))
 
@@ -357,14 +334,12 @@ class FCOSHead(nn.Module):
         bbox_towers = []
         for l, feature in enumerate(x):
             feature = self.share_tower(feature)
-            # cls_tower = self.cbam(self.cls_tower(feature))
             cls_tower = self.cls_tower(feature)
             bbox_tower = self.bbox_tower(feature)
             if yield_bbox_towers:
                 bbox_towers.append(bbox_tower)
 
-            # logits.append(self.cbam_cls_logits(self.cls_logits(cls_tower)))  #(B, 1, H, W)
-            logits.append(self.cls_logits(cls_tower))  #(B, 1, H, W)
+            logits.append(self.cls_logits(cls_tower))
             ctrness.append(self.ctrness(bbox_tower))
             reg = self.bbox_pred(bbox_tower)
             if self.scales is not None:
