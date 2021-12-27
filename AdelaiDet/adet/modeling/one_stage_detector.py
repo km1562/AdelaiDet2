@@ -91,7 +91,10 @@ def build_top_module(cfg):
         # top_module = nn.Conv2d(
         #     inp, oup,
         #     kernel_size=3, stride=1, padding=1)
-        top_module = ASPP(inp, oup)
+        conv_norn = []
+        conv_norn.append(ASPP(inp, oup))
+        conv_norn.append(nn.GroupNorm(32, inp))
+        top_module = nn.sequential(*conv_norn)
     else:
         top_module = None
     return top_module
