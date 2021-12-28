@@ -10,6 +10,7 @@ from detectron2.modeling.proposal_generator.build import PROPOSAL_GENERATOR_REGI
 from adet.layers import DFConv2d, IOULoss
 from .batext_outputs import BATextOutputs
 from detectron2.layers import DeformConv
+from ..one_stage_detector import ASPP
 
 __all__ = ["BAText"]
 
@@ -297,10 +298,13 @@ class FCOSHead(nn.Module):
                 conv_func = nn.Conv2d
             for i in range(num_convs):
                 # if head != "bbox":
-                tower.append(conv_func(
-                    in_channels, in_channels,
-                    kernel_size=3, stride=1,
-                    padding=1, bias=True
+                # tower.append(conv_func(
+                #     in_channels, in_channels,
+                #     kernel_size=3, stride=1,
+                #     padding=1, bias=True
+                # ))
+                tower.append(ASPP(
+                    in_channels, in_channels
                 ))
                 if norm == "GN":
                     tower.append(nn.GroupNorm(32, in_channels))
