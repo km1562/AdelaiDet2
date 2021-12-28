@@ -19,7 +19,7 @@ MODEL:
     # Best e2e: 0.5; Best det: 0.3
     INFERENCE_TH_TEST: 0.5
 SOLVER:
-  IMS_PER_BATCH: 1
+  IMS_PER_BATCH: 3
   BASE_LR: 0.001
   STEPS: (80000, )
   MAX_ITER: 100000
