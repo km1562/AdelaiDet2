@@ -295,7 +295,7 @@ class BATextOutputs(object):
             bezier_targets_per_im = torch.stack((x_targets, y_targets), dim=3)  # [location,bbox_numm,bezier,8,2]
             bezier_targets_per_im = bezier_targets_per_im.view(xs.size(0), bboxes.size(0), 16)  # [location,bbox_numm,bezier, 16]
 
-            if self.center_sample:  #得到掩码区域
+            if self.center_sample:  #得到中心区域
                 is_in_boxes = self.get_sample_region(
                     bboxes, self.strides, self.num_loc_list,
                     xs, ys, radius=self.radius
