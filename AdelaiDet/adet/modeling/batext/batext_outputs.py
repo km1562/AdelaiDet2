@@ -411,7 +411,8 @@ class BATextOutputs(object):
 
         bundle = {
             "l": self.locations, "o": self.logits_pred,
-            "r": self.reg_pred, "c": self.ctrness_pred,
+            # "r": self.reg_pred, "c": self.ctrness_pred,
+            "r": self.reg_pred,
             "s": self.strides,
         }
 
@@ -427,14 +428,15 @@ class BATextOutputs(object):
             l = instance_dict["l"]
             o = instance_dict["o"]
             r = instance_dict["r"] * instance_dict["s"]
-            c = instance_dict["c"]
+            # c = instance_dict["c"]
             # top_feat is the bezier regression
             t = instance_dict["t"] * instance_dict["s"] if "t" in bundle else None
 
             sampled_boxes.append(
                 self.forward_for_single_feature_map(
                     # pre_nms, l, o, r, c, self.image_sizes, t
-                    l, o, r, c, self.image_sizes, t
+                    # l, o, r, c, self.image_sizes, t
+                    l, o, r, self.image_sizes, t
                 )
             )
 
@@ -446,7 +448,8 @@ class BATextOutputs(object):
     def forward_for_single_feature_map(
             # self, pre_nms, locations, box_cls,
             self, locations, box_cls,
-            reg_pred, ctrness,
+            # reg_pred, ctrness,
+            reg_pred,
             image_sizes, top_feat=None, ):
         N, C, H, W = box_cls.shape
 
@@ -455,23 +458,23 @@ class BATextOutputs(object):
         box_cls = box_cls.reshape(N, -1, C).sigmoid()
         box_regression = reg_pred.view(N, 4, H, W).permute(0, 2, 3, 1)
         box_regression = box_regression.reshape(N, -1, 4)
-        ctrness = ctrness.view(N, 1, H, W).permute(0, 2, 3, 1)
-        ctrness = ctrness.reshape(N, -1).sigmoid()
+        # ctrness = ctrness.view(N, 1, H, W).permute(0, 2, 3, 1)
+        # ctrness = ctrness.reshape(N, -1).sigmoid()
         if top_feat is not None:
             top_feat = top_feat.view(N, -1, H, W).permute(0, 2, 3, 1)
             top_feat = top_feat.reshape(N, H * W, -1)
 
         # if self.thresh_with_ctr is True, we multiply the classification
         # scores with centerness scores before applying the threshold.
-        if self.thresh_with_ctr:
-            box_cls = box_cls * ctrness[:, :, None]
+        # if self.thresh_with_ctr:
+        #     box_cls = box_cls * ctrness[:, :, None]
         candidate_inds = box_cls > self.pre_nms_thresh
         # candidate_inds = box_cls > pre_nms
         pre_nms_top_n = candidate_inds.view(N, -1).sum(1)
         pre_nms_top_n = pre_nms_top_n.clamp(max=self.pre_nms_top_n)
 
-        if not self.thresh_with_ctr:
-            box_cls = box_cls * ctrness[:, :, None]
+        # if not self.thresh_with_ctr:
+        #     box_cls = box_cls * ctrness[:, :, None]
 
         results = []
         for i in range(N):

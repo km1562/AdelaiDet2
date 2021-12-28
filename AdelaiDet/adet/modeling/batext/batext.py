@@ -276,7 +276,8 @@ class FCOSHead(nn.Module):
         for modules in [
             self.cls_tower, self.bbox_tower,
             self.share_tower, self.cls_logits,
-            self.bbox_pred, self.ctrness
+            # self.bbox_pred, self.ctrness
+            self.bbox_pred,
         ]:
             for l in modules.modules():
                 if isinstance(l, nn.Conv2d):
@@ -291,7 +292,7 @@ class FCOSHead(nn.Module):
     def forward(self, x, top_module=None, yield_bbox_towers=False):
         logits = []
         bbox_reg = []
-        ctrness = []
+        # ctrness = []
         top_feats = []
         bbox_towers = []
         for l, feature in enumerate(x):
