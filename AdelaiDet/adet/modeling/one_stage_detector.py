@@ -26,10 +26,10 @@ class ASPP(nn.Module):
         # 生成从-1到1的线性值
         x_range = torch.linspace(-1, 1, ins_feat.shape[-1], device=ins_feat.device)
         y_range = torch.linspace(-1, 1, ins_feat.shape[-2], device=ins_feat.device)
-        y, x = torch.meshgrid(y_range, x_range)  # 生成二维坐标网格
-        y = y.expand([ins_feat.shape[0], 1, -1, -1])  # 扩充到和ins_feat相同维度
-        x = x.expand([ins_feat.shape[0], 1, -1, -1])
-        coord_feat = torch.cat([x, y], 1)  # 位置特征
+        y_loc, x_loc = torch.meshgrid(y_range, x_range)  # 生成二维坐标网格
+        y_loc = y_loc.expand([ins_feat.shape[0], 1, -1, -1])  # 扩充到和ins_feat相同维度
+        x_loc = x_loc.expand([ins_feat.shape[0], 1, -1, -1])
+        coord_feat = torch.cat([x_loc, y_loc], 1)  # 位置特征
 
         size = x.shape[2:]
 
