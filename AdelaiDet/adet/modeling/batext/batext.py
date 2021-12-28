@@ -319,6 +319,11 @@ class FCOSHead(nn.Module):
             self.add_module('{}_tower'.format(head),
                             nn.Sequential(*tower))
 
+        # self.cls_logits = nn.Conv2d(
+        #     in_channels, self.num_classes,
+        #     kernel_size=3, stride=1,
+        #     padding=1
+        # )
         self.cls_logits = nn.Conv2d(
             in_channels, self.num_classes,
             kernel_size=3, stride=1,
