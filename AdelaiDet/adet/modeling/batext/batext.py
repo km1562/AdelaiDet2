@@ -131,7 +131,8 @@ class BAText(nn.Module):
 
         locations = self.compute_locations(features)
         # logits_pred, reg_pred, ctrness_pred, top_feats, bbox_towers = self.fcos_head(
-        logits_pred, reg_pred, top_feats, bbox_towers = self.fcos_head(
+        # logits_pred, reg_pred, top_feats, bbox_towers = self.fcos_head(
+        logits_pred, top_feats, bbox_towers = self.fcos_head(
             features, top_module, self.yield_proposal)
 
         if self.training:
@@ -149,7 +150,7 @@ class BAText(nn.Module):
             images,
             locations,
             logits_pred,
-            reg_pred,
+            # reg_pred,
             # ctrness_pred,
             top_feats,
             self.focal_loss_alpha,
@@ -259,10 +260,10 @@ class FCOSHead(nn.Module):
             kernel_size=3, stride=1,
             padding=1
         )
-        self.bbox_pred = nn.Conv2d(
-            in_channels, 4, kernel_size=3,
-            stride=1, padding=1
-        )
+        # self.bbox_pred = nn.Conv2d(
+        #     in_channels, 4, kernel_size=3,
+        #     stride=1, padding=1
+        # )
         # self.ctrness = nn.Conv2d(
         #     in_channels, 1, kernel_size=3,
         #     stride=1, padding=1
@@ -277,7 +278,7 @@ class FCOSHead(nn.Module):
             self.cls_tower, self.bbox_tower,
             self.share_tower, self.cls_logits,
             # self.bbox_pred, self.ctrness
-            self.bbox_pred,
+            # self.bbox_pred,
         ]:
             for l in modules.modules():
                 if isinstance(l, nn.Conv2d):
@@ -304,12 +305,13 @@ class FCOSHead(nn.Module):
 
             logits.append(self.cls_logits(cls_tower))
             # ctrness.append(self.ctrness(bbox_tower))
-            reg = self.bbox_pred(bbox_tower)
+            # reg = self.bbox_pred(bbox_tower)
             if self.scales is not None:
                 reg = self.scales[l](reg)
             # Note that we use relu, as in the improved FCOS, instead of exp.
-            bbox_reg.append(F.relu(reg))
+            # bbox_reg.append(F.relu(reg))
             if top_module is not None:
                 top_feats.append(top_module(bbox_tower))
         # return logits, bbox_reg, ctrness, top_feats, bbox_towers
-        return logits, bbox_reg, top_feats, bbox_towers
+        # return logits, bbox_reg, top_feats, bbox_towers
+        return logits, top_feats, bbox_towers
