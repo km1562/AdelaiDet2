@@ -53,7 +53,7 @@ def fcos_losses(
         reg_targets,
         bezier_targets,
         logits_pred,
-        reg_pred,
+        # reg_pred,
         bezier_pred,
         # ctrness_pred,
         focal_loss_alpha,
@@ -81,24 +81,24 @@ def fcos_losses(
         reduction="sum",
     ) / num_pos_avg
 
-    reg_pred = reg_pred[pos_inds]
+    # reg_pred = reg_pred[pos_inds]
     bezier_pred = bezier_pred[pos_inds]
     reg_targets = reg_targets[pos_inds]
     bezier_targets = bezier_targets[pos_inds]
     # ctrness_pred = ctrness_pred[pos_inds]
     
-    ious, gious = compute_ious(reg_pred, reg_targets)
+    # ious, gious = compute_ious(reg_pred, reg_targets)
     ctrness_targets = compute_ctrness_targets(reg_targets)
     ctrness_targets_sum = ctrness_targets.sum()
     loss_denorm = max(reduce_sum(ctrness_targets_sum).item() / num_gpus, 1e-6)
 
-    if pos_inds.numel() > 0:
-        reg_loss = iou_loss(
-            ious,
-            gious,
-            ctrness_targets
-        ) / loss_denorm
-        
+    # if pos_inds.numel() > 0:
+        # reg_loss = iou_loss(
+        #     ious,
+        #     gious,
+        #     ctrness_targets
+        # ) / loss_denorm
+
         # ctrness_loss = F.binary_cross_entropy_with_logits(
         #   ctrness_pred,
         #    ctrness_targets,
@@ -111,10 +111,13 @@ def fcos_losses(
         #   gamma=focal_loss_gamma,
         #   reduction="sum",
         # ) / num_pos_avg
-    else:
-        reg_loss = reg_pred.sum() * 0
-        bezier_loss = bezier_pred.sum() * 0
+    # else:
+        # reg_loss = reg_pred.sum() * 0
+        # bezier_loss = bezier_pred.sum() * 0
         # ctrness_loss = ctrness_pred.sum() * 0
+
+    if pos_inds.numel == 0:
+        bezier_loss = bezier_pred.sum() * 0
 
     bezier_loss = F.smooth_l1_loss(
         bezier_pred, bezier_targets, reduction="none")
@@ -123,7 +126,7 @@ def fcos_losses(
 
     losses = {
         "loss_fcos_cls": class_loss,
-        "loss_fcos_loc": reg_loss,
+        # "loss_fcos_loc": reg_loss,
         # "loss_fcos_ctr": ctrness_loss,
         "loss_fcos_bezier": bezier_loss,
     }
@@ -136,7 +139,7 @@ class BATextOutputs(object):
             images,
             locations,
             logits_pred,
-            reg_pred,
+            # reg_pred,
             # ctrness_pred,
             bezier_pred,
             focal_loss_alpha,
@@ -155,7 +158,7 @@ class BATextOutputs(object):
             gt_instances=None,
     ):
         self.logits_pred = logits_pred
-        self.reg_pred = reg_pred
+        # self.reg_pred = reg_pred
         self.bezier_pred = bezier_pred
         # self.ctrness_pred = ctrness_pred
         self.locations = locations
@@ -357,12 +360,12 @@ class BATextOutputs(object):
                 x.permute(0, 2, 3, 1).reshape(-1, self.num_classes)
                 for x in self.logits_pred
             ], dim=0,)
-        reg_pred = cat(
-            [
-                # Reshape: (N, B, Hi, Wi) -> (N, Hi, Wi, B) -> (N*Hi*Wi, B)
-                x.permute(0, 2, 3, 1).reshape(-1, 4)
-                for x in self.reg_pred
-            ], dim=0,)
+        # reg_pred = cat(
+        #     [
+        #         # Reshape: (N, B, Hi, Wi) -> (N, Hi, Wi, B) -> (N*Hi*Wi, B)
+        #         x.permute(0, 2, 3, 1).reshape(-1, 4)
+        #         for x in self.reg_pred
+        #     ], dim=0,)
         bezier_pred = cat(
             [
                 # Reshape: (N, B, Hi, Wi) -> (N, Hi, Wi, B) -> (N*Hi*Wi, B)
@@ -398,7 +401,7 @@ class BATextOutputs(object):
             reg_targets,
             bezier_targets,
             logits_pred,
-            reg_pred,
+            # reg_pred,
             bezier_pred,
             # ctrness_pred,
             self.focal_loss_alpha,
@@ -412,7 +415,7 @@ class BATextOutputs(object):
         bundle = {
             "l": self.locations, "o": self.logits_pred,
             # "r": self.reg_pred, "c": self.ctrness_pred,
-            "r": self.reg_pred,
+            # "r": self.reg_pred,
             "s": self.strides,
         }
 
@@ -427,7 +430,7 @@ class BATextOutputs(object):
             # we denormalize them here.
             l = instance_dict["l"]
             o = instance_dict["o"]
-            r = instance_dict["r"] * instance_dict["s"]
+            # r = instance_dict["r"] * instance_dict["s"]
             # c = instance_dict["c"]
             # top_feat is the bezier regression
             t = instance_dict["t"] * instance_dict["s"] if "t" in bundle else None
@@ -436,7 +439,8 @@ class BATextOutputs(object):
                 self.forward_for_single_feature_map(
                     # pre_nms, l, o, r, c, self.image_sizes, t
                     # l, o, r, c, self.image_sizes, t
-                    l, o, r, self.image_sizes, t
+                    # l, o, r, self.image_sizes, t
+                    l, o, self.image_sizes, t
                 )
             )
 
@@ -449,15 +453,15 @@ class BATextOutputs(object):
             # self, pre_nms, locations, box_cls,
             self, locations, box_cls,
             # reg_pred, ctrness,
-            reg_pred,
+            # reg_pred,
             image_sizes, top_feat=None, ):
         N, C, H, W = box_cls.shape
 
         # put in the same format as locations
         box_cls = box_cls.view(N, C, H, W).permute(0, 2, 3, 1)
         box_cls = box_cls.reshape(N, -1, C).sigmoid()
-        box_regression = reg_pred.view(N, 4, H, W).permute(0, 2, 3, 1)
-        box_regression = box_regression.reshape(N, -1, 4)
+        # box_regression = reg_pred.view(N, 4, H, W).permute(0, 2, 3, 1)
+        # box_regression = box_regression.reshape(N, -1, 4)
         # ctrness = ctrness.view(N, 1, H, W).permute(0, 2, 3, 1)
         # ctrness = ctrness.reshape(N, -1).sigmoid()
         if top_feat is not None:
@@ -486,8 +490,8 @@ class BATextOutputs(object):
             per_box_loc = per_candidate_nonzeros[:, 0]
             per_class = per_candidate_nonzeros[:, 1]
 
-            per_box_regression = box_regression[i]
-            per_box_regression = per_box_regression[per_box_loc]
+            # per_box_regression = box_regression[i]
+            # per_box_regression = per_box_regression[per_box_loc]
             per_locations = locations[per_box_loc]
             if top_feat is not None:
                 per_top_feat = top_feat[i]
@@ -499,20 +503,20 @@ class BATextOutputs(object):
                 per_box_cls, top_k_indices = \
                     per_box_cls.topk(per_pre_nms_top_n, sorted=False)
                 per_class = per_class[top_k_indices]
-                per_box_regression = per_box_regression[top_k_indices]
+                # per_box_regression = per_box_regression[top_k_indices]
                 per_locations = per_locations[top_k_indices]
                 if top_feat is not None:
                     per_top_feat = per_top_feat[top_k_indices]
 
-            detections = torch.stack([
-                per_locations[:, 0] - per_box_regression[:, 0],
-                per_locations[:, 1] - per_box_regression[:, 1],
-                per_locations[:, 0] + per_box_regression[:, 2],
-                per_locations[:, 1] + per_box_regression[:, 3],
-            ], dim=1)
+            # detections = torch.stack([
+            #     per_locations[:, 0] - per_box_regression[:, 0],
+            #     per_locations[:, 1] - per_box_regression[:, 1],
+            #     per_locations[:, 0] + per_box_regression[:, 2],
+            #     per_locations[:, 1] + per_box_regression[:, 3],
+            # ], dim=1)
 
             boxlist = Instances(image_sizes[i])
-            boxlist.pred_boxes = Boxes(detections)
+            # boxlist.pred_boxes = Boxes(detections)
             boxlist.scores = torch.sqrt(per_box_cls)
             boxlist.pred_classes = per_class
             boxlist.locations = per_locations
@@ -531,7 +535,8 @@ class BATextOutputs(object):
         results = []
         for i in range(num_images):
             # multiclass nms
-            result = ml_nms(boxlists[i], self.nms_thresh)
+            # result = ml_nms(boxlists[i], self.nms_thresh)  #这里我需要用poly_nms的。。。
+            result = boxlists
             number_of_detections = len(result)
 
             # Limit to max_per_image detections **over all classes**

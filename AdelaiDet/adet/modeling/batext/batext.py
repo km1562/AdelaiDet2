@@ -306,8 +306,8 @@ class FCOSHead(nn.Module):
             logits.append(self.cls_logits(cls_tower))
             # ctrness.append(self.ctrness(bbox_tower))
             # reg = self.bbox_pred(bbox_tower)
-            if self.scales is not None:
-                reg = self.scales[l](reg)
+            # if self.scales is not None:
+            #     reg = self.scales[l](reg)
             # Note that we use relu, as in the improved FCOS, instead of exp.
             # bbox_reg.append(F.relu(reg))
             if top_module is not None:
