@@ -536,7 +536,7 @@ class BATextOutputs(object):
         for i in range(num_images):
             # multiclass nms
             # result = ml_nms(boxlists[i], self.nms_thresh)  #这里我需要用poly_nms的。。。
-            result = boxlists
+            result = boxlists[i]
             number_of_detections = len(result)
 
             # Limit to max_per_image detections **over all classes**
