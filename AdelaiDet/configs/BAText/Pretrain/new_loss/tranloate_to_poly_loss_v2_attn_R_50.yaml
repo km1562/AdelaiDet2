@@ -1,4 +1,4 @@
-_BASE_: "Base-Pretrain.yaml"
+_BASE_: "../Base-Pretrain.yaml"
 MODEL:
   WEIGHTS: "https://dl.fbaipublicfiles.com/detectron/ImageNetPretrained/MSRA/R-50.pkl"
   BACKBONE: 
@@ -22,5 +22,5 @@ SOLVER:
   CHECKPOINT_PERIOD: 20000
 TEST:
   EVAL_PERIOD: 20000
-OUTPUT_DIR: "output/batext/pretrain/v2_attn_R_50"
+OUTPUT_DIR: "output/batext/pretrain/new_loss/tranloate_to_poly_loss_v2_attn_R_50"
 
