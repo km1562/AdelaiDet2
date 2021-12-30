@@ -47,6 +47,9 @@ def poly_ml_nms(boxlist, nms_thresh, max_proposals=-1,
     # sorted(boxlist, key=lambda boxlis: -boxlist.scores)
 
     # keep = batched_nms(boxes, scores, labels, nms_thresh)
+    boxes = boxlist.top_feat
+    scores = boxlist.scores
+    labels = boxlist.pred_classes
 
     keep = ComputeIou.nms_polygon(boxes=boxes, iou=nms_thresh, index=True)
     if max_proposals > 0:
@@ -54,13 +57,13 @@ def poly_ml_nms(boxlist, nms_thresh, max_proposals=-1,
 
     return boxlist[keep]
 
-def sort_boxlist(instance_lists):
-    image_size = instance_lists[0].image_size
-    ret = Instances(image_size)
-
-    key = instance_lists[0]._fiels.keys()
-    scores = instance_lists[key["scores"]]
-    scores, indics = scores.sort()
-    for k in instance_lists[0]._fiels.keys():
-        if k != "scores":
-            values = [i.get(k) for i in instance_lists]
+# def sort_boxlist(instance_lists):
+#     image_size = instance_lists[0].image_size
+#     ret = Instances(image_size)
+#
+#     key = instance_lists[0]._fiels.keys()
+#     scores = instance_lists[key["scores"]]
+#     scores, indics = scores.sort()
+#     for k in instance_lists[0]._fiels.keys():
+#         if k != "scores":
+#             values = [i.get(k) for i in instance_lists]
