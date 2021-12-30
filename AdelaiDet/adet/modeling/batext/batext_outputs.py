@@ -10,7 +10,7 @@ from fvcore.nn import sigmoid_focal_loss_jit
 from adet.utils.comm import reduce_sum, compute_ious
 from adet.layers import ml_nms
 
-from .compute_bezier_iou import catetroy_bezier_to_different_loos
+from .compute_bezier_iou import bezier_para_to_poly
 from adet.layers.iou_loss import IOULoss
 
 logger = logging.getLogger(__name__)
@@ -124,8 +124,8 @@ def fcos_losses(
 
 
     # new loss
-    beziers_iou, iou_weight, bezier_pred, bezier_targets, l1_smooth_ctrness_targets  = catetroy_bezier_to_different_loos(bezier_pred, bezier_targets, ctrness_targets)
-    bezier_iou_loss = bezier_iou_loss(beziers_iou, gious=None, weight=iou_weight) / loss_denorm
+    # beziers_iou, iou_weight, bezier_pred, bezier_targets, l1_smooth_ctrness_targets  = catetroy_bezier_to_different_loos(bezier_pred, bezier_targets, ctrness_targets)
+    # bezier_iou_loss = bezier_iou_loss(beziers_iou, gious=None, weight=iou_weight) / loss_denorm
 
     # print("bezier_loss's value\n", bezier_ios_loss)
     # print("——————————分割线————————")
@@ -134,16 +134,18 @@ def fcos_losses(
     # bezier_loss = ((bezier_loss.mean(dim=-1) * ctrness_targets).sum()
     #                 / loss_denorm)
 
+
+    bezier_pred, bezier_targets = bezier_para_to_poly(bezier_pred, bezier_targets)
     bezier_loss_l1 = F.smooth_l1_loss(
         bezier_pred, bezier_targets, reduction="none")
-    bezier_loss_l1 = ((bezier_loss_l1.mean(dim=-1) * l1_smooth_ctrness_targets).sum()
-                    / loss_denorm)
+    # bezier_loss_l1 = ((bezier_loss_l1.mean(dim=-1) * l1_smooth_ctrness_targets).sum()
+    #                 / loss_denorm)
 
     losses = {
         "loss_fcos_cls": class_loss,
         "loss_fcos_loc": reg_loss,
         "loss_fcos_ctr": ctrness_loss,
-        "loss_iou_bezier": bezier_iou_loss,
+        # "loss_iou_bezier": bezier_iou_loss,
         "loss_f1_bezier": bezier_loss_l1,
     }
     return losses

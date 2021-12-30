@@ -63,3 +63,16 @@ def catetroy_bezier_to_different_loos(bezier_pred, bezier_targets, ctrness_targe
     # print("beziers_iou's value\n", beziers_iou)
     return torch.tensor(beziers_iou, device='cuda'), torch.tensor(iou_weight, device='cuda'), \
            torch.tensor(smooth_l1_bezier_pred, device='cuda'), torch.tensor(smooth_l1_bezier_targets, device='cuda'), torch.tensor(smooth_l1_ctrness_targets, device='cuda')
+
+def bezier_para_to_poly(bezier_pred, bezier_targets):
+    bezier_pred_poly = []
+    beizer_target_poly = []
+    beizer_nums = len(bezier_pred)
+    for i in range(beizer_nums):
+        pts1 = bezier_to_poly(bezier_pred[i])
+        pts2 = bezier_to_poly(bezier_targets[i])
+
+        bezier_pred_poly.append(pts1)
+        beizer_target_poly.append(pts2)
+
+    return bezier_pred_poly, beizer_target_poly
