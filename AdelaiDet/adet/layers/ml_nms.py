@@ -1,6 +1,7 @@
 from detectron2.layers import batched_nms
 from shapely.geometry import Polygon
 from pyxllib.algo.geo import ComputeIou
+import torch
 
 def ml_nms(boxlist, nms_thresh, max_proposals=-1,
            score_field="scores", label_field="ori_annotation_file_list"):
@@ -42,12 +43,24 @@ def poly_ml_nms(boxlist, nms_thresh, max_proposals=-1,
     """
     if nms_thresh <= 0:
         return boxlist
-    boxes = boxlist.top_feat.tensor
-    scores = boxlist.scores
-    labels = boxlist.pred_classes
+
+    # sorted(boxlist, key=lambda boxlis: -boxlist.scores)
+
     # keep = batched_nms(boxes, scores, labels, nms_thresh)
+
     keep = ComputeIou.nms_polygon(boxes=boxes, iou=nms_thresh, index=True)
     if max_proposals > 0:
         keep = keep[: max_proposals]
-    boxlist = boxlist[keep]
-    return boxlist
+
+    return boxlist[keep]
+
+def sort_boxlist(instance_lists):
+    image_size = instance_lists[0].image_size
+    ret = Instances(image_size)
+
+    key = instance_lists[0]._fiels.keys()
+    scores = instance_lists[key["scores"]]
+    scores, indics = scores.sort()
+    for k in instance_lists[0]._fiels.keys():
+        if k != "scores":
+            values = [i.get(k) for i in instance_lists]

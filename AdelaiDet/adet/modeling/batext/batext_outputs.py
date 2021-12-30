@@ -8,7 +8,7 @@ from adet.utils.comm import get_world_size
 from fvcore.nn import sigmoid_focal_loss_jit
 
 from adet.utils.comm import reduce_sum, compute_ious
-from adet.layers import ml_nms
+from adet.layers import ml_nms, poly_ml_nms
 
 
 logger = logging.getLogger(__name__)
@@ -536,7 +536,7 @@ class BATextOutputs(object):
         for i in range(num_images):
             # multiclass nms
             # result = ml_nms(boxlists[i], self.nms_thresh)  #这里我需要用poly_nms的。。。
-            result = boxlists[i]
+            result = poly_ml_nms(boxlists[i], self.nms_thresh)
             number_of_detections = len(result)
 
             # Limit to max_per_image detections **over all classes**
