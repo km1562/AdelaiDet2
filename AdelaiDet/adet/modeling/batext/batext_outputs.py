@@ -10,6 +10,7 @@ from fvcore.nn import sigmoid_focal_loss_jit
 from adet.utils.comm import reduce_sum, compute_ious
 from adet.layers import ml_nms
 
+from .compute_poly_iou import bezier_para_to_poly
 
 logger = logging.getLogger(__name__)
 
@@ -116,9 +117,11 @@ def fcos_losses(
         bezier_loss = bezier_pred.sum() * 0
         ctrness_loss = ctrness_pred.sum() * 0
 
+    bezier_pred, bezier_targets = bezier_para_to_poly(bezier_pred, bezier_targets)
     bezier_loss = F.smooth_l1_loss(
         bezier_pred, bezier_targets, reduction="none")
-    bezier_loss = ((bezier_loss.mean(dim=-1) * ctrness_targets).sum()
+    # bezier_loss = ((bezier_loss.mean(dim=-1) * ctrness_targets).sum()
+    bezier_loss = ((bezier_loss.flatten(start_dim=1).mean(dim=-1) * ctrness_targets).sum()
                     / loss_denorm)
 
     losses = {
