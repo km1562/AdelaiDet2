@@ -1,4 +1,4 @@
-_BASE_: "Base-Pretrain.yaml"
+_BASE_: "../Base-Pretrain.yaml"
 MODEL:
   WEIGHTS: "https://dl.fbaipublicfiles.com/detectron/ImageNetPretrained/MSRA/R-50.pkl"
   BACKBONE: 
